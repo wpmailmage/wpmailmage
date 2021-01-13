@@ -76,7 +76,7 @@ class WooCommerceAbandonedCartEvent extends AbstractEvent implements
 
         // escape out as cart is no longer abandoned
         if (is_null($abandoned_date) || empty($abandoned_items)) {
-            return false;
+            return new \WP_Error("EWP_WACE_03", "Cart is no longer abandoned.");
         }
 
         $query = new \WC_Order_Query([
@@ -126,7 +126,7 @@ class WooCommerceAbandonedCartEvent extends AbstractEvent implements
         }
 
         // have purchased some items
-        if (count($abandoned_items) < $cart->get_item_ids()) {
+        if (count($abandoned_items) < count($cart->get_item_ids())) {
             return new \WP_Error("EWP_WACE_02", "Some Items have been purchased since cart abandonment.");
         }
 

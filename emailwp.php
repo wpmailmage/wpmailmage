@@ -5,7 +5,7 @@
  * Plugin URI: https://www.wpmailmage.com
  * Description: Mail Mage allows you to ...
  * Author: EmailWP <hello@wpmailmage.com>
- * Version: 0.0.1 
+ * Version: 0.0.2 
  * Author URI: https://www.wpmailmage.com
  * Network: True
  */
@@ -13,7 +13,7 @@
 $ewp_base_path = dirname(__FILE__);
 
 if (!defined('EWP_VERSION')) {
-    define('EWP_VERSION', '0.0.1');
+    define('EWP_VERSION', '0.0.2');
 }
 
 if (!defined('EWP_MINIMUM_PHP_VERSION')) {
