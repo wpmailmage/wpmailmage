@@ -59,7 +59,8 @@ class CronManager
              * @var \WPDB $wpdb
              */
             global $wpdb;
-            $row = $wpdb->get_row("SELECT * FROM `" . $this->properties->table_automation_woocommerce_carts . "` WHERE `abandoned` IS NULL AND `modified` <= NOW() - INTERVAL 60 MINUTE  LIMIT 1", ARRAY_A);
+            $query = "SELECT * FROM `" . $this->properties->table_automation_woocommerce_carts . "` WHERE `abandoned` IS NULL AND `modified` <= '" . date('Y-m-d H:i:s', current_time('timestamp') - 3600) . "'  LIMIT 1";
+            $row = $wpdb->get_row($query, ARRAY_A);
             if (empty($row)) {
                 break;
             }
