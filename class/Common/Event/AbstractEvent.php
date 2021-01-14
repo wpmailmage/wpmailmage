@@ -13,6 +13,7 @@ abstract class AbstractEvent
      * @var callable
      */
     private $_callback;
+    private $_log_message;
 
     public function listen($callback)
     {
@@ -41,5 +42,15 @@ abstract class AbstractEvent
         $event_data = $event_manager->generate_event_data($data);
 
         call_user_func_array($this->_callback, [$event_data]);
+    }
+
+    protected function set_log_message($message)
+    {
+        $this->_log_message = $message;
+    }
+
+    public function get_log_message()
+    {
+        return $this->_log_message;
     }
 }

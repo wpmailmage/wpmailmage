@@ -95,11 +95,17 @@ class Automation
         // Optinal Check to see if event is still valid
         // TODO: some method to say no retries when verified fails
         $result = $this->_event->verified($event_data);
-        if (!is_wp_error($result)) {
+        if ($result === false) {
+
+            // fatal error
+            $this->_action->set_log_message($this->_event->get_log_message());
+        }
+
+        if ($result && !is_wp_error($result)) {
             $result = $this->_action->run($event_data);
         }
 
-        if (is_wp_error($result)) {
+        if (false === $result || is_wp_error($result)) {
 
             $placeholder_manager->cancel();
         }

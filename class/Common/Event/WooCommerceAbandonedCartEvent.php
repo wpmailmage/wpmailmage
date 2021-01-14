@@ -76,18 +76,27 @@ class WooCommerceAbandonedCartEvent extends AbstractEvent implements
 
         // escape out as cart is no longer abandoned
         if (is_null($abandoned_date) || empty($abandoned_items)) {
-            return new \WP_Error("EWP_WACE_03", "Cart is no longer abandoned.");
+            $this->set_log_message("Cart is no longer abandoned.");
+            return false;
         }
 
         $query = new \WC_Order_Query([
-            'date_created' => '>' . $abandoned_date,
+            'date_created' => '>=' . $cart->get_created(),
             'limit' => -1
         ]);
         $query->set('customer', $cart->get_billing_email());
+
         /**
          * @var \WC_Order[] $orders
          */
         $orders = $query->get_orders();
+
+        // escape if an order has been placed since cart abandoned
+        if (!empty($orders)) {
+            $this->set_log_message("Order has been placed since cart abandoned.");
+            return false;
+        }
+
         if (!empty($orders)) {
             foreach ($orders as $order) {
 
@@ -122,12 +131,14 @@ class WooCommerceAbandonedCartEvent extends AbstractEvent implements
 
         // have purchased all items
         if (empty($abandoned_items)) {
-            return new \WP_Error("EWP_WACE_01", "All Items have been purchased since cart abandonment.");
+            $this->set_log_message("All Items have been purchased since cart abandonment.");
+            return false;
         }
 
         // have purchased some items
         if (count($abandoned_items) < count($cart->get_item_ids())) {
-            return new \WP_Error("EWP_WACE_02", "Some Items have been purchased since cart abandonment.");
+            $this->set_log_message("Some Items have been purchased since cart abandonment.");
+            return false;
         }
 
         return true;

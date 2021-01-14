@@ -115,6 +115,7 @@ class PostStatusChangeEvent extends AbstractEvent implements EventInterface
             return true;
         }
 
-        return new \WP_Error("EWP_PostStatusChangeEvent_1", "Post status change is no longer valid.");
+        $this->set_log_message("Post status change is no longer valid.");
+        return false;
     }
 }

@@ -78,6 +78,7 @@ class WooCommerceOrderStatusEvent extends AbstractEvent implements EventInterfac
             }
         }
 
-        return new \WP_Error("EWP_WOSE_1", "Order status has changed to: " . $current_order_status);
+        $this->set_log_message("Order status has changed to: " . $current_order_status);
+        return false;
     }
 }

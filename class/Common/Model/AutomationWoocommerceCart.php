@@ -26,11 +26,11 @@ class AutomationWoocommerceCart
     {
         if (is_array($data)) {
 
-            $this->_id = intval($data['id']) > 0 ? intval($data['id']) : null;
+            $this->_id = isset($data['id']) && intval($data['id']) > 0 ? intval($data['id']) : null;
             $this->_session_id = isset($data['session_id']) ? $data['session_id'] : null;
             $this->_user_id = isset($data['user_id']) ? $data['user_id'] : null;
-            $this->set_cart_raw($data['cart']);
-            $this->set_data_raw($data['data']);
+            $this->set_cart_raw(isset($data['cart']) ? $data['cart'] : null);
+            $this->set_data_raw(isset($data['data']) ? $data['data'] : null);
             $this->_abandoned = isset($data['abandoned']) ? $data['abandoned'] : null;
             $this->_created = isset($data['created']) ? $data['created'] : current_time('mysql');
             $this->_modified = isset($data['modified']) ? $data['modified'] : current_time('mysql');
@@ -152,6 +152,16 @@ class AutomationWoocommerceCart
     public function get_abanoned()
     {
         return $this->_abandoned;
+    }
+
+    public function get_created()
+    {
+        return $this->_created;
+    }
+
+    public function get_modified()
+    {
+        return $this->_modified;
     }
 
     public function cart_has_items()

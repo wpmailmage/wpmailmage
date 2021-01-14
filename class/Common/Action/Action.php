@@ -38,7 +38,7 @@ class Action implements ActionInterface
         return isset($this->_settings[$id]) ? $this->_settings[$id] : false;
     }
 
-    protected function set_log_message($message)
+    public function set_log_message($message)
     {
         $this->_log_message = $message;
     }

@@ -105,14 +105,21 @@ class CronManager
                 $result = $automation;
             }
 
-            if (is_wp_error($result)) {
+            if (false === $result) {
 
+                // Hard fail dont run again
+                $wpdb->update($this->properties->table_automation_queue, ['status' => 'F', 'status_message' => $automation->get_log_message(), 'ran' => current_time('mysql')], ['id' => $row['id']]);
+            } elseif (is_wp_error($result)) {
+
+                // Error happend so try
                 if ($row['attempts'] + 1 >= 5) {
                     $wpdb->update($this->properties->table_automation_queue, ['status' => 'F', 'status_message' => $result->get_error_message(), 'ran' => current_time('mysql')], ['id' => $row['id']]);
                 } else {
                     $wpdb->update($this->properties->table_automation_queue, ['status' => 'E', 'status_message' => $result->get_error_message(), 'ran' => current_time('mysql')], ['id' => $row['id']]);
                 }
             } elseif ($result) {
+
+                // Success
                 $message = $automation->get_log_message();
                 $wpdb->update($this->properties->table_automation_queue, ['status' => 'Y', 'status_message' => $message, 'ran' => current_time('mysql')], ['id' => $row['id']]);
             }
