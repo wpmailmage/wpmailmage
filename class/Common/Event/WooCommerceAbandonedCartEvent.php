@@ -55,7 +55,7 @@ class WooCommerceAbandonedCartEvent extends AbstractEvent implements
 
     public function get_placeholders()
     {
-        return ['wc_cart'];
+        return ['wc_cart', 'general'];
     }
 
     /**
@@ -80,64 +80,8 @@ class WooCommerceAbandonedCartEvent extends AbstractEvent implements
             return false;
         }
 
-        $query = new \WC_Order_Query([
-            'date_created' => '>=' . $cart->get_created(),
-            'limit' => -1
-        ]);
-        $query->set('customer', $cart->get_billing_email());
-
-        /**
-         * @var \WC_Order[] $orders
-         */
-        $orders = $query->get_orders();
-
-        // escape if an order has been placed since cart abandoned
-        if (!empty($orders)) {
+        if ($cart->customer_has_ordered()) {
             $this->set_log_message("Order has been placed since cart abandoned.");
-            return false;
-        }
-
-        if (!empty($orders)) {
-            foreach ($orders as $order) {
-
-                if (empty($abandoned_items)) {
-                    break;
-                }
-
-                /**
-                 * @var \WC_Order_Item_Product[] $items
-                 */
-                $items = $order->get_items();
-                if (empty($items)) {
-                    continue;
-                }
-
-                foreach ($items as $item) {
-
-                    $product_id = $item->get_product_id();
-
-                    $variation_id = 0;
-                    if ($item->is_type('variable')) {
-                        $variation_id = $item->get_variation_id();
-                    }
-
-                    $key = $product_id . '-' . $variation_id;
-                    if (isset($abandoned_items[$key])) {
-                        unset($abandoned_items[$key]);
-                    }
-                }
-            }
-        }
-
-        // have purchased all items
-        if (empty($abandoned_items)) {
-            $this->set_log_message("All Items have been purchased since cart abandonment.");
-            return false;
-        }
-
-        // have purchased some items
-        if (count($abandoned_items) < count($cart->get_item_ids())) {
-            $this->set_log_message("Some Items have been purchased since cart abandonment.");
             return false;
         }
 

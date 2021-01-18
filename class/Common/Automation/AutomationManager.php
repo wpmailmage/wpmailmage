@@ -156,4 +156,10 @@ class AutomationManager
             $automation->install();
         }
     }
+
+    public function delete($id)
+    {
+        $automation_model = $this->get_automation_model($id);
+        return $automation_model->delete();
+    }
 }

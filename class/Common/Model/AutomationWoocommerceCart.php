@@ -144,9 +144,35 @@ class AutomationWoocommerceCart
 
         $this->save();
 
-        if (is_null($prev_is_abandoned) && $this->cart_has_items()) {
+        if (is_null($prev_is_abandoned) && !$this->customer_has_ordered() && $this->cart_has_items()) {
             do_action('ewp/automation_woocommerce_cart/abandoned', $this);
         }
+    }
+
+    /**
+     * Check to see if the customer has made an order since the cart was created
+     *
+     * @return bool
+     */
+    public function customer_has_ordered()
+    {
+        $query = new \WC_Order_Query([
+            'date_created' => '>=' . $this->get_created(),
+            'limit' => -1
+        ]);
+        $query->set('customer', $this->get_billing_email());
+
+        /**
+         * @var \WC_Order[] $orders
+         */
+        $orders = $query->get_orders();
+
+        // escape if an order has been placed since cart abandoned
+        if (!empty($orders)) {
+            return true;
+        }
+
+        return false;
     }
 
     public function get_abanoned()

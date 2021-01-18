@@ -25,14 +25,17 @@ class SendEmailAction extends Action
             $templates[] = ['value' => $template_id, 'label' => $template_data['label']];
         }
 
+        $text_variable_msg = '<br /><br /> Insert event data using text variables.';
+
         $this->register_field('Template', 'template', [
             'type' => 'select',
             'options' => $templates,
-            'placeholder' => false
+            'placeholder' => false,
+            'tooltip' => 'Select which email template to use.'
         ]);
-        $this->register_field('To', 'to');
-        $this->register_field('Subject', 'subject');
-        $this->register_field('Message', 'message', ['type' => 'textarea']);
+        $this->register_field('To', 'to', ['tooltip' => 'Set the email recipient, seperate multiple emails with a “,”.' . $text_variable_msg]);
+        $this->register_field('Subject', 'subject', ['tooltip' => 'The Email subject line, some email templates such as WooCommerce also use this as the email heading.' . $text_variable_msg]);
+        $this->register_field('Message', 'message', ['type' => 'textarea', 'tooltip' => 'The main body of the email.' . $text_variable_msg]);
     }
 
     public function get_to()
@@ -80,7 +83,9 @@ class SendEmailAction extends Action
         $html = preg_replace_callback('/<a([^>]*)href=("[^"]*"|\'[^\']*\')([^>])*>/', function ($matches) use ($event_data) {
             $url = substr($matches[2], 1, -1);
             $url = add_query_arg(['ewp_ref_session' => $event_data['queue_id']], $url);
-            return '<a' . $matches[1] . 'href="' . $url . '"' . $matches[3] . '>';
+            $before = isset($matches[1]) ? $matches[1] : '';
+            $after = isset($matches[3]) ? $matches[3] : '';
+            return '<a' . $before . 'href="' . $url . '"' . $after . '>';
         }, $html);
 
         return $html;

@@ -62,15 +62,5 @@ class EmailWP
         if ($this->automation_manager) {
             $this->automation_manager->install();
         }
-
-        if ($this->cron_manager && isset($_GET['dev'])) {
-
-            add_action('init', function () {
-
-                // TEST: run the next automation
-                $this->cron_manager->runner();
-                die();
-            });
-        }
     }
 }

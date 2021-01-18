@@ -90,7 +90,7 @@ class EventManager
         }
 
         $output = [];
-        $core_args = ['queue_id'];
+        $core_args = ['queue_id', 'automation_id'];
 
         foreach ($event_data as $id => $data) {
 

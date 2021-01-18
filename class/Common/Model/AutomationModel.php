@@ -138,8 +138,9 @@ class AutomationModel
     public function delete()
     {
         if (get_post_type($this->get_id()) === EWP_POST_TYPE) {
-            wp_delete_post($this->get_id(), true);
+            return wp_delete_post($this->get_id(), true);
         }
+        return false;
     }
 
     public function get_id()

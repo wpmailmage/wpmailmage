@@ -53,7 +53,7 @@ class WooCommerceOrderStatusEvent extends AbstractEvent implements EventInterfac
 
     public function get_placeholders()
     {
-        return ['wc_order'];
+        return ['wc_order', 'general'];
     }
 
     /**

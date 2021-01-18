@@ -97,7 +97,7 @@ class PostStatusChangeEvent extends AbstractEvent implements EventInterface
 
     public function get_placeholders()
     {
-        return ['post'];
+        return ['post', 'general'];
     }
 
     /**

@@ -22,7 +22,7 @@ class WooCommerceAbandonedCartPlaceholder extends AbstractWooCommercePlaceholder
             'first_name' => [$this, 'replace_first_name'],
             'last_name' => [$this, 'replace_last_name'],
             'full_name' => [$this, 'replace_full_name'],
-            'restore_button' => [$this, 'replace_restore_button'],
+            'view_button' => [$this, 'replace_view_button'],
             'items' => [$this, 'replace_items']
         ];
     }
@@ -41,16 +41,7 @@ class WooCommerceAbandonedCartPlaceholder extends AbstractWooCommercePlaceholder
         return new AutomationWoocommerceCart($data);
     }
 
-    public function replace_restore_button($data)
-    {
-        /**
-         * @var AutomationWoocommerceCart $cart
-         */
-        $cart = $data[$this->get_id()];
-        return '<a href="' . add_query_arg(['ewp_cart' => $cart->get_session_id()], wc_get_cart_url()) . '">Restore cart</a>';
-    }
-
-    public function replace_restore_link($data)
+    public function replace_view_link($data, $args = [])
     {
         /**
          * @var AutomationWoocommerceCart $cart
@@ -59,7 +50,23 @@ class WooCommerceAbandonedCartPlaceholder extends AbstractWooCommercePlaceholder
         return add_query_arg(['ewp_cart' => $cart->get_session_id()], wc_get_cart_url());
     }
 
-    public function replace_items($data)
+    public function replace_view_button($data, $args = [])
+    {
+        $link = $this->replace_view_link($data, $args);
+        $text = isset($args['text']) && !empty($args['text']) ? $args['text'] : 'View cart';
+        return '<a href="' . $link . '">' . $text . '</a>';
+    }
+
+    public function replace_restore_link($data, $args = [])
+    {
+        /**
+         * @var AutomationWoocommerceCart $cart
+         */
+        $cart = $data[$this->get_id()];
+        return add_query_arg(['ewp_cart' => $cart->get_session_id()], wc_get_cart_url());
+    }
+
+    public function replace_items($data, $args = [])
     {
         /**
          * @var AutomationWoocommerceCart $cart

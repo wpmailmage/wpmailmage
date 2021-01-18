@@ -6,6 +6,19 @@ use EmailWP\Container;
 
 class LogAction extends Action
 {
+    public function __construct($id = null, $settings = [])
+    {
+        parent::__construct($id, $settings);
+
+        $this->register_fields();
+    }
+
+    public function register_fields()
+    {
+        $text_variable_msg = '<br /><br /> Insert event data using text variables.';
+        $this->register_field('Message', 'message', ['type' => 'textarea', 'tooltip' => 'Content to write to file.' . $text_variable_msg]);
+    }
+
     public function get_label()
     {
         return 'Write to log file';
@@ -13,14 +26,31 @@ class LogAction extends Action
 
     public function run($event_data = [])
     {
-        $file_path = WP_CONTENT_DIR . '/ewp.log';
+        $base = WP_CONTENT_DIR;
+        $ds = DIRECTORY_SEPARATOR;
+        $path = $base . $ds . 'uploads';
+
+        if (!is_dir($path)) {
+            mkdir($path);
+        }
+
+        $path .= $ds . 'emailwp';
+        if (!is_dir($path)) {
+            mkdir($path);
+        }
+
+        $automation_id = $event_data['automation_id'];
+        $path .= $ds . $automation_id;
+        if (!is_dir($path)) {
+            mkdir($path);
+        }
+
         $queue_id = $event_data['queue_id'];
+        $file_path = $path . $ds . $queue_id . '.log';
 
-        $groups = array_filter(array_keys($event_data), function ($item) {
-            return !in_array($item, ['queue_id']);
-        });
-
-        $result = file_put_contents($file_path, current_time('mysql') . ' : -id=' . $queue_id . ' -data=' . implode(',', $groups) . "\n", FILE_APPEND);
+        $message = nl2br($this->get_setting('message'));
+        $message = $this->replace_placeholders($message, $event_data);
+        $result = file_put_contents($file_path, "\n---\n" . $message, FILE_APPEND);
 
         if (false === $result) {
             return new \WP_Error('EWP_LA_1', 'Unable to write to file: ' . $file_path);

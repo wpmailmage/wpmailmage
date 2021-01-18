@@ -96,9 +96,12 @@ class CronManager
             $automation = $this->automation_manager->get_automation($row['automation_id']);
             if (!is_wp_error($automation)) {
 
+                // TODO: move to event data class
                 // Pass queue to event_data
                 $data = maybe_unserialize($row['action_data']);
+
                 $data['queue_id'] = $row['id'];
+                $data['automation_id'] = $row['automation_id'];
 
                 $result = $automation->run($data);
             } else {

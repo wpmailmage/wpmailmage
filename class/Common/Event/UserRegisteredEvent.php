@@ -29,7 +29,7 @@ class UserRegisteredEvent extends AbstractEvent implements EventInterface
 
     public function get_placeholders()
     {
-        return ['user'];
+        return ['user', 'general'];
     }
 
     /**

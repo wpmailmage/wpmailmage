@@ -29,7 +29,7 @@ class PlaceholderManager
         $placeholders = array_merge($placeholders, [
             UserPlaceholder::class,
             PostPlaceholder::class,
-
+            GeneralPlaceholder::class
         ]);
 
         if (class_exists('WooCommerce')) {

@@ -166,7 +166,8 @@ class RestManager
         register_rest_route($namespace, '/automations/queue/(?P<queue_id>\S+)\.png', array(
             array(
                 'methods'             => \WP_REST_Server::READABLE,
-                'callback'            => array($this, 'track_read')
+                'callback'            => array($this, 'track_read'),
+                'permission_callback' => '__return_true'
             ),
         ));
 
@@ -174,6 +175,7 @@ class RestManager
             array(
                 'methods'             => \WP_REST_Server::CREATABLE,
                 'callback'            => array($this, 'save_cart'),
+                'permission_callback' => '__return_true'
             )
         ));
     }
@@ -285,6 +287,12 @@ class RestManager
     public function delete_automation(\WP_REST_Request $request)
     {
         $id = intval($request->get_param('id'));
+        $result = $this->automation_manager->delete($id);
+        if (!$result) {
+            return $this->http->end_rest_error("unable to delete automation #" . $id);
+        }
+
+        return $this->get_automations($request);
     }
 
     public function get_queue(\WP_REST_Request $request)
