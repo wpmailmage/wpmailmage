@@ -1,10 +1,9 @@
 === Mail Mage ===
 Contributors: mailmage
-Donate link: 
 Tags: automation, automate, abandoned cart, product reviews, woocommerce, email
 Requires at least: 4.0
 Tested up to: 5.6
-Stable tag: 0.0.5
+Stable tag: 0.0.6
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -36,6 +35,6 @@ You are able to create a single automation that takes advantages of all Mail mag
 
 == Changelog ==
 
-= 0.0.5 =
+= 0.0.6 =
 
 Initial plugin release

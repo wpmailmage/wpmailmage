@@ -130,7 +130,7 @@ class AutomationModel
         $this->action = isset($data['action'], $data['action']['id']) ? sanitize_text_field($data['action']['id']) : null;
         $this->action_settings = isset($data['action'], $data['action']['settings']) ? $data['action']['settings'] : null;
 
-        $this->disabled = isset($data['disabled']) && $data['disabled'] === 'yes' ? true : false;
+        $this->disabled = isset($data['disabled']) && $data['disabled'] === 'no' ? false : true;
 
         $this->delay = isset($data['delay']) ? $data['delay'] : ['unit' => null, 'interval' => null];
     }
