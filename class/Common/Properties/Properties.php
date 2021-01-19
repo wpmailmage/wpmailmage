@@ -31,20 +31,11 @@ class Properties
     public function __construct()
     {
         $this->plugin_file_path = realpath(dirname(__DIR__) . '/../../emailwp.php');
-        $this->plugin_dir_path = plugin_dir_path($this->plugin_file_path);
-        $this->plugin_url_path = plugin_dir_url($this->plugin_file_path);
-        $this->plugin_folder_name = basename($this->plugin_dir_path);
-        $this->plugin_basename = plugin_basename($this->plugin_file_path);
+        $this->generate_file_paths();
+        
         $this->plugin_domain = 'mail-mage';
         $this->plugin_version = EWP_VERSION;
         $this->is_pro = false;
-
-        $this->frontend_dir = $this->plugin_dir_path . trailingslashit('frontend');
-        $this->view_dir = $this->frontend_dir . trailingslashit('views');
-
-        $this->frontend_url = $this->plugin_url_path . trailingslashit('frontend');
-        $this->view_url = $this->frontend_url . trailingslashit('views');
-        $this->js_url = $this->frontend_url . trailingslashit('js');
 
         $this->rest_namespace = 'ewp';
         $this->rest_version = 'v1';
@@ -57,6 +48,20 @@ class Properties
         $this->table_automation_queue = $wpdb->prefix . 'ewp_automation_queue';
         $this->table_automation_queue_activity = $wpdb->prefix . 'ewp_automation_queue_activity';
         $this->table_automation_woocommerce_carts = $wpdb->prefix . 'ewp_automation_woocommerce_carts';
+    }
+
+    public function generate_file_paths(){
+        $this->plugin_dir_path = plugin_dir_path($this->plugin_file_path);
+        $this->plugin_url_path = plugin_dir_url($this->plugin_file_path);
+        $this->plugin_folder_name = basename($this->plugin_dir_path);
+        $this->plugin_basename = plugin_basename($this->plugin_file_path);
+
+        $this->frontend_dir = $this->plugin_dir_path . trailingslashit('frontend');
+        $this->view_dir = $this->frontend_dir . trailingslashit('views');
+
+        $this->frontend_url = $this->plugin_url_path . trailingslashit('frontend');
+        $this->view_url = $this->frontend_url . trailingslashit('views');
+        $this->js_url = $this->frontend_url . trailingslashit('js');
     }
 
     public function get_rest_nonce()

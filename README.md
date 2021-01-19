@@ -4,7 +4,7 @@
 **Tags:** automation, automate, abandoned cart, product reviews, woocommerce, email \
 **Requires at least:** 4.0 \
 **Tested up to:** 5.6 \
-**Stable tag:** 0.0.6 \
+**Stable tag:** 0.0.7 \
 **Requires PHP:** 5.4 \
 **License:** GPLv2 or later \
 **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
@@ -19,7 +19,7 @@ Creating an automation simply by choosing and configuring when to trigger, how l
 
 ## Installation
 
-1. Upload the plugin files to the `/wp-content/plugins/mailmage` directory, or install the plugin through the WordPress plugins screen directly.
+1. Upload the plugin files to the `/wp-content/plugins/mail-mage` directory, or install the plugin through the WordPress plugins screen directly.
 1. Activate the plugin through the 'Plugins' screen in WordPress
 1. Use the Tools->Mail Mage screen to create and view your automation
 
@@ -37,6 +37,6 @@ You are able to create a single automation that takes advantages of all Mail mag
 
 ## Changelog
 
-### 0.0.6
+### 0.0.7
 
 Initial plugin release

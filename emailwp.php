@@ -3,17 +3,16 @@
 /**
  * Plugin Name: Mail Mage
  * Plugin URI: https://www.wpmailmage.com
- * Description: Mail Mage allows you to ...
+ * Description: Mail Mage allows you to automate your WordPress marketing workflows helping to convert, retain and recover customers in WordPress, WooCommerce and other popular plugins.
  * Author: Mail Mage <hello@wpmailmage.com>
- * Version: 0.0.6 
- * Author URI: https://www.wpmailmage.com
+ * Version: 0.0.7 
  * Network: True
  */
 
 $ewp_base_path = dirname(__FILE__);
 
 if (!defined('EWP_VERSION')) {
-    define('EWP_VERSION', '0.0.6');
+    define('EWP_VERSION', '0.0.7');
 }
 
 if (!defined('EWP_MINIMUM_PHP_VERSION')) {
@@ -26,11 +25,5 @@ if (!defined('EWP_POST_TYPE')) {
 
 if (version_compare(PHP_VERSION, EWP_MINIMUM_PHP_VERSION, '>=')) {
     require_once $ewp_base_path . '/class/autoload.php';
-
-    $updater = new \EmailWP\Github\Updater\Updater(__FILE__);
-    $updater->set_username('wpmailmage');
-    $updater->set_repository('wpmailmage');
-    $updater->initialize();
-
     require_once $ewp_base_path . '/setup-ewp.php';
 }
