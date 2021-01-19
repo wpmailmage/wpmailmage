@@ -60,16 +60,6 @@ class RestManager
         $this->properties = $properties;
         $this->analytics_manager = $analytics_manager;
         $this->placeholder_manager = $placeholder_manager;
-
-        $namespace = $this->properties->rest_namespace . '/' . $this->properties->rest_version;
-        $rest_prefix         = trailingslashit(rest_get_url_prefix()) . $namespace;
-        $is_rest_api_request = (false !== strpos($_SERVER['REQUEST_URI'], $rest_prefix));
-
-        if ($is_rest_api_request) {
-            add_action('woocommerce_init', function () {
-                wc_load_cart();
-            });
-        }
     }
 
     public function register()

@@ -5,14 +5,14 @@
  * Plugin URI: https://www.wpmailmage.com
  * Description: Mail Mage allows you to automate your WordPress marketing workflows helping to convert, retain and recover customers in WordPress, WooCommerce and other popular plugins.
  * Author: Mail Mage <hello@wpmailmage.com>
- * Version: 0.0.7 
+ * Version: 0.0.8 
  * Network: True
  */
 
 $ewp_base_path = dirname(__FILE__);
 
 if (!defined('EWP_VERSION')) {
-    define('EWP_VERSION', '0.0.7');
+    define('EWP_VERSION', '0.0.8');
 }
 
 if (!defined('EWP_MINIMUM_PHP_VERSION')) {
