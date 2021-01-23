@@ -20,6 +20,7 @@ class Migrations
         $this->_migrations[] = array($this, 'migration_01');
         $this->_migrations[] = array($this, 'migration_02');
         $this->_migrations[] = array($this, 'migration_03');
+        $this->_migrations[] = array($this, 'migration_04');
     }
 
     public function isSetup()
@@ -149,5 +150,16 @@ class Migrations
 					  PRIMARY KEY (`id`)
 					) $charset_collate; ";
         dbDelta($sql);
+    }
+
+    public function migration_04($migrate_data = true)
+    {
+        /**
+         * @var \WPDB $wpdb
+         */
+        global $wpdb;
+
+        $sql = "ALTER TABLE `" . $this->properties->table_automation_queue . "` ADD COLUMN parent_id int(11) DEFAULT 0;";
+        $wpdb->query($sql);
     }
 }

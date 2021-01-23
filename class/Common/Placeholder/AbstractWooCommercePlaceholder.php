@@ -159,28 +159,39 @@ abstract class AbstractWooCommercePlaceholder extends AbstractPlaceholder
         }
     }
 
-    public function replace_first_name($data)
+    public function replace_first_name($data, $args = [])
     {
+        $fallback = isset($args['fallback']) ? $args['fallback'] : '';
+
         /**
          * @var \WC_Order|AutomationWoocommerceCart $order
          */
         $order = $data[$this->get_id()];
-        return $order->get_billing_first_name();
+        $name = $order->get_billing_first_name();
+        return !empty($name) ? $name : $fallback;
     }
-    public function replace_last_name($data)
+
+    public function replace_last_name($data, $args = [])
     {
+        $fallback = isset($args['fallback']) ? $args['fallback'] : '';
+
         /**
          * @var \WC_Order|AutomationWoocommerceCart $order
          */
         $order = $data[$this->get_id()];
-        return $order->get_billing_last_name();
+        $name = $order->get_billing_last_name();
+        return !empty($name) ? $name : $fallback;
     }
-    public function replace_full_name($data)
+
+    public function replace_full_name($data, $args = [])
     {
+        $fallback = isset($args['fallback']) ? $args['fallback'] : '';
+
         /**
          * @var \WC_Order|AutomationWoocommerceCart $order
          */
         $order = $data[$this->get_id()];
-        return $order->get_formatted_billing_full_name();
+        $name = $order->get_formatted_billing_full_name();
+        return !empty($name) ? $name : $fallback;
     }
 }

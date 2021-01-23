@@ -91,41 +91,7 @@ class CronManager
                 break;
             }
 
-            $wpdb->update($this->properties->table_automation_queue, ['status' => 'R', 'attempts' => intval($row['attempts']) + 1, 'modified' => current_time('mysql')], ['id' => $row['id']]);
-
-            $automation = $this->automation_manager->get_automation($row['automation_id']);
-            if (!is_wp_error($automation)) {
-
-                // TODO: move to event data class
-                // Pass queue to event_data
-                $data = maybe_unserialize($row['action_data']);
-
-                $data['queue_id'] = $row['id'];
-                $data['automation_id'] = $row['automation_id'];
-
-                $result = $automation->run($data);
-            } else {
-                $result = $automation;
-            }
-
-            if (false === $result) {
-
-                // Hard fail dont run again
-                $wpdb->update($this->properties->table_automation_queue, ['status' => 'F', 'status_message' => $automation->get_log_message(), 'ran' => current_time('mysql')], ['id' => $row['id']]);
-            } elseif (is_wp_error($result)) {
-
-                // Error happend so try
-                if ($row['attempts'] + 1 >= 5) {
-                    $wpdb->update($this->properties->table_automation_queue, ['status' => 'F', 'status_message' => $result->get_error_message(), 'ran' => current_time('mysql')], ['id' => $row['id']]);
-                } else {
-                    $wpdb->update($this->properties->table_automation_queue, ['status' => 'E', 'status_message' => $result->get_error_message(), 'ran' => current_time('mysql')], ['id' => $row['id']]);
-                }
-            } elseif ($result) {
-
-                // Success
-                $message = $automation->get_log_message();
-                $wpdb->update($this->properties->table_automation_queue, ['status' => 'Y', 'status_message' => $message, 'ran' => current_time('mysql')], ['id' => $row['id']]);
-            }
+            $this->automation_manager->run($row);
 
             if (count($times) >= 10) {
                 $times = array_slice($times, -9);

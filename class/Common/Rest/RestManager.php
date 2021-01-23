@@ -152,6 +152,22 @@ class RestManager
             ),
         ));
 
+        register_rest_route($namespace, '/queue/(?P<id>\d+)/run', array(
+            array(
+                'methods'             => \WP_REST_Server::EDITABLE,
+                'callback'            => array($this, 'run_queue_item'),
+                'permission_callback' => array($this, 'get_permission')
+            ),
+        ));
+
+        register_rest_route($namespace, '/queue/(?P<id>\d+)/cancel', array(
+            array(
+                'methods'             => \WP_REST_Server::DELETABLE,
+                'callback'            => array($this, 'cancel_queue_item'),
+                'permission_callback' => array($this, 'get_permission')
+            ),
+        ));
+
         // Email open
         register_rest_route($namespace, '/automations/queue/(?P<queue_id>\S+)\.png', array(
             array(
@@ -300,7 +316,7 @@ class RestManager
          */
         global $wpdb;
         $output = [];
-        $results = $wpdb->get_results("SELECT * FROM {$this->properties->table_automation_queue} WHERE 1=1 " . $where . " ORDER BY modified DESC", ARRAY_A);
+        $results = $wpdb->get_results("SELECT * FROM {$this->properties->table_automation_queue} WHERE 1=1 " . $where . " ORDER BY scheduled DESC, modified DESC", ARRAY_A);
         foreach ($results as $row) {
             $automation_queue_model = new AutomationQueueModel($row);
             $output[] = $automation_queue_model->data();
@@ -371,6 +387,7 @@ class RestManager
         $color = imagecolorallocatealpha($img, 0, 0, 0, 127);
         imagefill($img, 0, 0, $color);
         imagepng($img);
+        exit;
     }
 
     public function save_cart(\WP_REST_Request $request)
@@ -385,5 +402,23 @@ class RestManager
         $result = $automation_woocommerce_cart->save();
 
         return $this->http->end_rest_success($result);
+    }
+
+    public function run_queue_item(\WP_REST_Request $request)
+    {
+        $queue_id = $request->get_param('id');
+        $result = $this->automation_manager->run($queue_id);
+        return $this->http->end_rest_success($result);
+    }
+
+    public function cancel_queue_item(\WP_REST_Request $request)
+    {
+        $queue_id = $request->get_param('id');
+        /**
+         * @var \WPDB $wpdb
+         */
+        global $wpdb;
+        $result = $wpdb->update($this->properties->table_automation_queue, ['status' => 'F', 'status_message' => 'Manually cancelled', 'ran' => current_time('mysql')], ['id' => $queue_id]);
+        return $this->http->end_rest_success($result > 0 ? true : false);
     }
 }

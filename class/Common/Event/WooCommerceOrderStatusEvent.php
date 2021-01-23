@@ -48,12 +48,25 @@ class WooCommerceOrderStatusEvent extends AbstractEvent implements EventInterfac
 
     public function on_woocommerce_order_status_set($order_id, $order)
     {
+        if (!$this->apply_filters($order)) {
+            return;
+        }
+
         $this->triggered(['wc_order' => $order_id]);
     }
 
     public function get_placeholders()
     {
         return ['wc_order', 'general'];
+    }
+
+    /**
+     * @param \WC_Order $order
+     * @return bool
+     */
+    public function apply_filters($order)
+    {
+        return $order->is_created_via('checkout');
     }
 
     /**
@@ -70,6 +83,11 @@ class WooCommerceOrderStatusEvent extends AbstractEvent implements EventInterfac
          */
         $order = $event_data['wc_order'];
         $current_order_status = $order->get_status();
+
+        if (!$this->apply_filters($order)) {
+            $this->set_log_message("Order not created via checkout: " . $order->get_created_via());
+            return false;
+        }
 
         foreach ($this->_settings as $settings) {
             $order_status = $this->strip_wc_status_prefix($settings['order_status']);

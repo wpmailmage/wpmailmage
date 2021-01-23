@@ -34,6 +34,8 @@ class SendEmailAction extends Action
             'tooltip' => 'Select which email template to use.'
         ]);
         $this->register_field('To', 'to', ['tooltip' => 'Set the email recipient, seperate multiple emails with a “,”.' . $text_variable_msg]);
+        $this->register_field('Cc', 'cc');
+        $this->register_field('Bcc', 'bcc');
         $this->register_field('Subject', 'subject', ['tooltip' => 'The Email subject line, some email templates such as WooCommerce also use this as the email heading.' . $text_variable_msg]);
         $this->register_field('Message', 'message', ['type' => 'textarea', 'tooltip' => 'The main body of the email.' . $text_variable_msg]);
     }
@@ -41,6 +43,16 @@ class SendEmailAction extends Action
     public function get_to()
     {
         return $this->get_setting('to');
+    }
+
+    public function get_cc()
+    {
+        return $this->get_setting('cc');
+    }
+
+    public function get_bcc()
+    {
+        return $this->get_setting('bcc');
     }
 
     public function get_subject()
@@ -93,7 +105,49 @@ class SendEmailAction extends Action
 
     public function run($event_data = [])
     {
-        $to = $this->replace_placeholders($this->get_to(), $event_data);
+        if (!isset($event_data['_action'])) {
+            $recipients = explode(',', $this->replace_placeholders($this->get_to(), $event_data));
+            $recipients = array_filter(array_map('trim', $recipients));
+            $queue_id = intval($event_data['queue_id']);
+            if (count($recipients > 0) && $queue_id > 0) {
+
+                // TODO: Remove need of duplicate action_data, can get this from parent_id
+
+                /**
+                 * @var \WPDB $wpdb
+                 */
+                global $wpdb;
+                $properties = Container::getInstance()->get('properties');
+
+                $row = $wpdb->get_row("SELECT * FROM {$properties->table_automation_queue} WHERE id='" . $queue_id . "'", ARRAY_A);
+                if (!$row) {
+                    $this->set_log_message('Unable to find parent queue id: ' . $queue_id . '.');
+                    return false;
+                }
+
+                // rest and cleanup row data
+                $row['status'] = 'S';
+                $row['attempts'] = 0;
+                $row['parent_id'] = $queue_id;
+                unset($row['id']);
+
+                foreach ($recipients as $recipient) {
+
+                    $tmp = $row;
+                    $action_data = maybe_unserialize($tmp['action_data']);
+                    $action_data['_action'] = ['to' => $recipient];
+                    $tmp['action_data'] = serialize($action_data);
+                    $wpdb->insert($properties->table_automation_queue, $tmp);
+                }
+            }
+            $this->set_log_message(count($recipients) . ' Emails added to queue.');
+            return true;
+        } else {
+            $to = $event_data['_action']['to'];
+        }
+
+        $cc = $this->replace_placeholders($this->get_cc(), $event_data);
+        $bcc = $this->replace_placeholders($this->get_bcc(), $event_data);
         $subject = $this->replace_placeholders($this->get_subject(), $event_data);
         $message = nl2br($this->get_message());
         $message = $this->replace_placeholders($message, $event_data);
@@ -111,7 +165,32 @@ class SendEmailAction extends Action
 
         add_action('wp_mail_failed', [$this, 'capture_error']);
 
-        $result = $this->send($to, $subject, $message, "Content-Type: text/html\r\n");
+        $headers = ["Content-Type: text/html"];
+
+        if (!empty($cc)) {
+            $cc = explode(',', $cc);
+            foreach ($cc as $email) {
+                if (!is_email($email)) {
+                    continue;
+                }
+
+                $headers[] = "Cc: " . trim($email);
+            }
+        }
+
+        if (!empty($bcc)) {
+            $bcc = explode(',', $bcc);
+            foreach ($bcc as $email) {
+                if (!is_email($email)) {
+                    continue;
+                }
+
+                $headers[] = "Bcc: " . trim($email);
+            }
+        }
+
+
+        $result = $this->send($to, $subject, $message, $headers);
         remove_action('wp_mail_failed', [$this, 'capture_error']);
 
         if (!$result) {

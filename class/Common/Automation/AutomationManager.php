@@ -5,6 +5,7 @@ namespace EmailWP\Common\Automation;
 use EmailWP\Common\Action\ActionManager;
 use EmailWP\Common\Event\EventManager;
 use EmailWP\Common\Model\AutomationModel;
+use EmailWP\Container;
 use EmailWP\EventHandler;
 
 class AutomationManager
@@ -155,6 +156,70 @@ class AutomationManager
 
             $automation->install();
         }
+    }
+
+    /**
+     * Run automation
+     *
+     * @param int|array $row Row from queue table
+     * @return void
+     */
+    public function run($queue_id)
+    {
+        /**
+         * @var \WPDB $wpdb
+         */
+        global $wpdb;
+
+        $properties = Container::getInstance()->get('properties');
+
+        if (is_array($queue_id)) {
+            $row = $queue_id;
+        } else {
+            $queue_id = intval($queue_id);
+            $row = $wpdb->get_row("SELECT * FROM `" . $properties->table_automation_queue . "` WHERE (status='S' OR status='E' OR status='R') AND id = " . $queue_id . " LIMIT 1", ARRAY_A);
+            if (empty($row)) {
+                return false;
+            }
+        }
+
+        $wpdb->update($properties->table_automation_queue, ['status' => 'R', 'attempts' => intval($row['attempts']) + 1, 'modified' => current_time('mysql')], ['id' => $row['id']]);
+
+        $automation = $this->get_automation($row['automation_id']);
+        if (!is_wp_error($automation)) {
+
+            // TODO: move to event data class
+            // Pass queue to event_data
+            $data = maybe_unserialize($row['action_data']);
+
+            $data['queue_id'] = $row['id'];
+            $data['automation_id'] = $row['automation_id'];
+
+            $result = $automation->run($data);
+        } else {
+            $result = $automation;
+        }
+
+        if (false === $result) {
+
+            // Hard fail dont run again
+            $wpdb->update($properties->table_automation_queue, ['status' => 'F', 'status_message' => $automation->get_log_message(), 'ran' => current_time('mysql')], ['id' => $row['id']]);
+        } elseif (is_wp_error($result)) {
+
+            // Error happend so try
+            if ($row['attempts'] + 1 >= 5) {
+                $wpdb->update($properties->table_automation_queue, ['status' => 'F', 'status_message' => $result->get_error_message(), 'ran' => current_time('mysql')], ['id' => $row['id']]);
+            } else {
+                $wpdb->update($properties->table_automation_queue, ['status' => 'E', 'status_message' => $result->get_error_message(), 'ran' => current_time('mysql')], ['id' => $row['id']]);
+            }
+        } elseif ($result) {
+
+            // Success
+            $message = $automation->get_log_message();
+            $wpdb->update($properties->table_automation_queue, ['status' => 'Y', 'status_message' => $message, 'ran' => current_time('mysql')], ['id' => $row['id']]);
+        }
+
+        return true;
     }
 
     public function delete($id)

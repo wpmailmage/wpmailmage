@@ -14,7 +14,8 @@ class GeneralPlaceholder extends AbstractPlaceholder implements PlaceholderInter
     public function get_variables()
     {
         return [
-            'posts' => [$this, 'replace_posts']
+            'posts' => [$this, 'replace_posts'],
+            'user_emails' => [$this, 'replace_users'],
         ];
     }
 
@@ -26,6 +27,13 @@ class GeneralPlaceholder extends AbstractPlaceholder implements PlaceholderInter
     public function load_data($data)
     {
         return null;
+    }
+
+    public function replace_users($data, $args = [])
+    {
+        $role = isset($args['role']) ? $args['role'] : 'subscriber';
+        $user_query = new \WP_User_Query(['role' => $role, 'fields' => 'all', 'number' => -1]);
+        return implode(',', wp_list_pluck($user_query->get_results(), 'user_email'));
     }
 
     public function replace_posts($data, $args = [])
