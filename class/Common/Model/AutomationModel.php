@@ -144,7 +144,7 @@ class AutomationModel
                 'interval' => null
             ],
             'schedule' => [
-                'unit' => null,
+                'unit' => '',
                 'day' => null,
                 'hour' => null
             ]
