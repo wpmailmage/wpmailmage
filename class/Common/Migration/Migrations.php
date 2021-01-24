@@ -21,6 +21,7 @@ class Migrations
         $this->_migrations[] = array($this, 'migration_02');
         $this->_migrations[] = array($this, 'migration_03');
         $this->_migrations[] = array($this, 'migration_04');
+        $this->_migrations[] = array($this, 'migration_05');
     }
 
     public function isSetup()
@@ -48,6 +49,7 @@ class Migrations
 
         $verion_key = $this->_version_key;
         $version = intval(get_site_option($this->_version_key, 0));
+
         // $migrating = get_site_option('ewp_is_migrating', 'no');
         // if ('yes' === $migrating) {
         //     return;
@@ -161,5 +163,57 @@ class Migrations
 
         $sql = "ALTER TABLE `" . $this->properties->table_automation_queue . "` ADD COLUMN parent_id int(11) DEFAULT 0;";
         $wpdb->query($sql);
+    }
+
+    public function migration_05($migrate_data = true)
+    {
+        $query = new \WP_Query([
+            'post_type' => EWP_POST_TYPE,
+            'posts_per_page' => -1
+        ]);
+        if ($query->have_posts()) {
+            foreach ($query->posts as $post) {
+                $json = maybe_unserialize($post->post_content, true);
+                $delay = isset($json['delay']);
+                $unit = isset($json['delay'], $json['delay']['unit']) ? $json['delay']['unit'] : null;
+                $interval = isset($json['delay'], $json['delay']['interval']) ? $json['delay']['interval'] : null;
+                unset($json['delay']);
+
+                if (!is_null($unit) && intval($interval) > 0 && !is_null($interval)) {
+                    $json['schedule'] = [
+                        'type' => 'delay',
+                        'delay' => [
+                            'unit' => $unit,
+                            'interval' => $interval
+                        ],
+                        'schedule' => [
+                            'unit' => null,
+                            'day' => null,
+                            'hour' => null
+                        ]
+                    ];
+                } else {
+                    $json['schedule'] = [
+                        'type' => 'now',
+                        'delay' => [
+                            'unit' => null,
+                            'interval' => null
+                        ],
+                        'schedule' => [
+                            'unit' => null,
+                            'day' => null,
+                            'hour' => null
+                        ]
+                    ];
+                }
+
+                remove_filter('content_save_pre', 'wp_filter_post_kses');
+                $result = wp_update_post([
+                    'ID' => $post->ID,
+                    'post_content' => serialize($json)
+                ], true);
+                add_filter('content_save_pre', 'wp_filter_post_kses');
+            }
+        }
     }
 }

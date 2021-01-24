@@ -3,7 +3,7 @@ Contributors: mailmage
 Tags: automation, automate, abandoned cart, product reviews, woocommerce, email
 Requires at least: 4.0
 Tested up to: 5.6
-Stable tag: 0.0.9
+Stable tag: 0.0.10
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -34,6 +34,13 @@ You are able to create a single automation that takes advantages of all Mail mag
 == Screenshots ==
 
 == Changelog ==
+
+= 0.0.10 =
+
+* Fixed issue with running email from queue, no longer copies parent scheduled time, and if single email address is present it send straight away, otherwise emails are queue.
+* Added {{general.name}} {{general.description}} variables to display site name and description
+* Switch from rest to Ajax when storing abandoned carts
+* Added schedule settings.
 
 = 0.0.9 =
 

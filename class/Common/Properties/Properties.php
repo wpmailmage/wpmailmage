@@ -32,14 +32,14 @@ class Properties
     {
         $this->plugin_file_path = realpath(dirname(__DIR__) . '/../../emailwp.php');
         $this->generate_file_paths();
-        
+
         $this->plugin_domain = 'mail-mage';
         $this->plugin_version = EWP_VERSION;
         $this->is_pro = false;
 
         $this->rest_namespace = 'ewp';
         $this->rest_version = 'v1';
-        $this->rest_nonce = wp_create_nonce('wp_rest');
+        // $this->rest_nonce = wp_create_nonce('wp_rest');
 
         /**
          * @var \WPDB $wpdb
@@ -50,7 +50,8 @@ class Properties
         $this->table_automation_woocommerce_carts = $wpdb->prefix . 'ewp_automation_woocommerce_carts';
     }
 
-    public function generate_file_paths(){
+    public function generate_file_paths()
+    {
         $this->plugin_dir_path = plugin_dir_path($this->plugin_file_path);
         $this->plugin_url_path = plugin_dir_url($this->plugin_file_path);
         $this->plugin_folder_name = basename($this->plugin_dir_path);

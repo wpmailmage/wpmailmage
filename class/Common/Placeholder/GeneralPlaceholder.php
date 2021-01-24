@@ -16,6 +16,8 @@ class GeneralPlaceholder extends AbstractPlaceholder implements PlaceholderInter
         return [
             'posts' => [$this, 'replace_posts'],
             'user_emails' => [$this, 'replace_users'],
+            'name' => [$this, 'repalce_name'],
+            'description' => [$this, 'replace_description']
         ];
     }
 
@@ -27,6 +29,15 @@ class GeneralPlaceholder extends AbstractPlaceholder implements PlaceholderInter
     public function load_data($data)
     {
         return null;
+    }
+
+    public function repalce_name($data, $args = [])
+    {
+        return get_bloginfo('name');
+    }
+    public function replace_description($data, $args = [])
+    {
+        return get_bloginfo('description');
     }
 
     public function replace_users($data, $args = [])

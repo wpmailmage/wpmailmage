@@ -84,8 +84,7 @@ class AutomationManager
             return $action;
         }
 
-        $automation = new Automation($automation_model->get_id(), $event, $action);
-        $automation->delay($automation_model->get_delay());
+        $automation = new Automation($automation_model, $event, $action);
         return $automation;
     }
 

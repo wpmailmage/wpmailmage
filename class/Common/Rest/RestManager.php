@@ -13,6 +13,7 @@ use EmailWP\Common\Model\AutomationQueueModel;
 use EmailWP\Common\Model\AutomationWoocommerceCart;
 use EmailWP\Common\Placeholder\PlaceholderManager;
 use EmailWP\Common\Properties\Properties;
+use EmailWP\Common\Util\Logger;
 
 class RestManager
 {
@@ -60,6 +61,21 @@ class RestManager
         $this->properties = $properties;
         $this->analytics_manager = $analytics_manager;
         $this->placeholder_manager = $placeholder_manager;
+
+        // Load WC Cart when session if null
+        // $rest_prefix = $this->properties->rest_namespace . '/' . $this->properties->rest_version . '/cart';
+        // if (false !== strpos($_SERVER['REQUEST_URI'], $rest_prefix)) {
+        //     add_action('wp_loaded', function () {
+
+        //         if (did_action('woocommerce_init')) {
+        //             return;
+        //         }
+
+        //         if (is_null(WC()->session)) {
+        //             wc_load_cart();
+        //         }
+        //     }, PHP_INT_MAX);
+        // }
     }
 
     public function register()
@@ -177,13 +193,13 @@ class RestManager
             ),
         ));
 
-        register_rest_route($namespace, '/cart', array(
-            array(
-                'methods'             => \WP_REST_Server::CREATABLE,
-                'callback'            => array($this, 'save_cart'),
-                'permission_callback' => '__return_true'
-            )
-        ));
+        // register_rest_route($namespace, '/cart', array(
+        //     array(
+        //         'methods'             => \WP_REST_Server::CREATABLE,
+        //         'callback'            => array($this, 'save_cart'),
+        //         'permission_callback' => '__return_true'
+        //     )
+        // ));
     }
 
     public function get_permission()
@@ -394,6 +410,12 @@ class RestManager
     {
         // TODO: Write order to abandoned cart table
         $data = $request->get_body_params();
+
+        if (!WC()->session) {
+            Logger::write(__METHOD__ . ' No WC Session');
+            return $this->http->end_rest_error("No WC Session");
+        }
+
         $session_id = WC()->session->get_customer_id();
 
         $automation_woocommerce_cart = new AutomationWoocommerceCart($session_id);

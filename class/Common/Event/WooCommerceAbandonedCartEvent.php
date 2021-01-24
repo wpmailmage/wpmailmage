@@ -14,6 +14,9 @@ class WooCommerceAbandonedCartEvent extends AbstractEvent implements
     {
         // install abandoned cart listener
         Container::getInstance()->maybeAddInterceptor('EmailWP\Common\Interceptor\AbandonCartInterceptor');
+
+        add_action('wp_ajax_ewp_save_cart', [$this, 'save_cart']);
+        add_action('wp_ajax_nopriv_ewp_save_cart', [$this, 'save_cart']);
     }
 
     public function install_js()
@@ -29,9 +32,40 @@ class WooCommerceAbandonedCartEvent extends AbstractEvent implements
 
         wp_enqueue_script('ewp-wcac', $properties->js_url . 'woocommerce-capture-guest.js', ['jquery', 'woocommerce'], time());
         wp_localize_script('ewp-wcac', 'ewp', [
-            'nonce' => wp_create_nonce('wp_rest'), // $properties->get_rest_nonce(), //wp_create_nonce('wp_rest'),
-            'ajax_url' => rest_url('/' . $properties->rest_namespace . '/' . $properties->rest_version . '/cart'),
+            'nonce' => wp_create_nonce('ewp_save_cart'), // $properties->get_rest_nonce(), //wp_create_nonce('wp_rest'),
+            'ajax_url' => admin_url('admin-ajax.php') //rest_url('/' . $properties->rest_namespace . '/' . $properties->rest_version . '/cart'),
         ]);
+    }
+
+    /**
+     * Save WC Cart Data
+     */
+    public function save_cart()
+    {
+        if (!wp_verify_nonce($_POST['nonce'], 'ewp_save_cart')) {
+            echo json_encode([
+                'status' => 'E',
+                'data' => 'Invalid Nonce'
+            ]);
+            exit;
+        }
+
+        $data = [
+            'billing_first_name' => sanitize_text_field($_POST['billing_first_name']),
+            'billing_last_name' => sanitize_text_field($_POST['billing_last_name']),
+            'billing_email' => sanitize_email($_POST['billing_email']),
+        ];
+
+        $session_id = WC()->session->get_customer_id();
+        $automation_woocommerce_cart = new AutomationWoocommerceCart($session_id);
+        $automation_woocommerce_cart->set_cart(WC()->cart->get_cart_for_session());
+        $automation_woocommerce_cart->set_data($data);
+        $result = $automation_woocommerce_cart->save();
+        echo json_encode([
+            'status' => 'S',
+            'data' => $result
+        ]);
+        exit;
     }
 
     /**

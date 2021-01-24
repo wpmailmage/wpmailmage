@@ -109,7 +109,7 @@ class SendEmailAction extends Action
             $recipients = explode(',', $this->replace_placeholders($this->get_to(), $event_data));
             $recipients = array_filter(array_map('trim', $recipients));
             $queue_id = intval($event_data['queue_id']);
-            if (count($recipients > 0) && $queue_id > 0) {
+            if (count($recipients) > 1 && $queue_id > 1) {
 
                 // TODO: Remove need of duplicate action_data, can get this from parent_id
 
@@ -129,6 +129,7 @@ class SendEmailAction extends Action
                 $row['status'] = 'S';
                 $row['attempts'] = 0;
                 $row['parent_id'] = $queue_id;
+                $row['scheduled'] = current_time('mysql');
                 unset($row['id']);
 
                 foreach ($recipients as $recipient) {
@@ -139,9 +140,15 @@ class SendEmailAction extends Action
                     $tmp['action_data'] = serialize($action_data);
                     $wpdb->insert($properties->table_automation_queue, $tmp);
                 }
+
+                $this->set_log_message(count($recipients) . ' Emails added to queue.');
+                return true;
+            } elseif (count($recipients) == 1 && $queue_id > 1) {
+                $to = $recipients[0];
+            } else {
+                $this->set_log_message('No Email recipents.');
+                return false;
             }
-            $this->set_log_message(count($recipients) . ' Emails added to queue.');
-            return true;
         } else {
             $to = $event_data['_action']['to'];
         }

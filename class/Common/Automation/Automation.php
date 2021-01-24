@@ -5,13 +5,17 @@ namespace EmailWP\Common\Automation;
 use EmailWP\Common\Action\Action;
 use EmailWP\Common\Event\AbstractEvent;
 use EmailWP\Common\Event\EventManager;
+use EmailWP\Common\Model\AutomationModel;
 use EmailWP\Common\Placeholder\PlaceholderManager;
 use EmailWP\Common\Properties\Properties;
 use EmailWP\Container;
 
 class Automation
 {
-    private $_id;
+    /**
+     * @var AutomationModel
+     */
+    private $_model;
 
     /**
      * @var Action
@@ -41,9 +45,9 @@ class Automation
      * @param AbstractEvent $event
      * @param Action $action
      */
-    public function __construct($id, $event, $action)
+    public function __construct($model, $event, $action)
     {
-        $this->_id = $id;
+        $this->_model = $model;
         $this->_action = $action;
         $this->_event = $event;
     }
@@ -60,7 +64,7 @@ class Automation
 
     public function get_id()
     {
-        return $this->_id;
+        return $this->_model->get_id();
     }
 
     public function delay($time_in_seconds = 0)
@@ -128,7 +132,7 @@ class Automation
             'automation_id' => $this->get_id(),
             'action_name' => $this->_action->get_id(),
             'action_data' => serialize($event_data),
-            'scheduled' => date('Y-m-d H:i:s', current_time('timestamp') + $this->get_delay()),
+            'scheduled' => date('Y-m-d H:i:s', $this->_model->get_schedule(current_time('timestamp') + $this->_model->get_delay())),
             'created' => current_time('mysql'),
             'modified' => current_time('mysql')
         ]);

@@ -44,6 +44,11 @@ class AutomationModel
      */
     protected $delay;
 
+    /**
+     * @var array $schedule
+     */
+    protected $schedule;
+
     public function __construct($data = null)
     {
         $this->setup_data($data);
@@ -132,7 +137,18 @@ class AutomationModel
 
         $this->disabled = isset($data['disabled']) && $data['disabled'] === 'no' ? false : true;
 
-        $this->delay = isset($data['delay']) ? $data['delay'] : ['unit' => null, 'interval' => null];
+        $this->schedule = isset($data['schedule']) ? $data['schedule'] : [
+            'type' => 'now',
+            'delay' => [
+                'unit' => null,
+                'interval' => null
+            ],
+            'schedule' => [
+                'unit' => null,
+                'day' => null,
+                'hour' => null
+            ]
+        ];
     }
 
     public function delete()
@@ -240,14 +256,136 @@ class AutomationModel
         }
     }
 
+    public function calculate_scheduled_time($schedule, $day = 0, $hour = 0, $current_time = null)
+    {
+        $minute_padded = '00';
+        $hour_padded = str_pad($hour, 2, 0, STR_PAD_LEFT);
+        $day_padded = str_pad($day, 2, 0, STR_PAD_LEFT);
+        $time_offset = time() - current_time('timestamp');
+        $current_time = !is_null($current_time) ? $current_time : time();
+        $scheduled_time = false;
+
+        switch ($schedule) {
+            case 'month':
+                // 1-31
+
+                // 31st of feb, should = 28/29
+                if (date('t', $current_time) < $day) {
+                    $day_padded = str_pad(date('t', $current_time), 2, 0, STR_PAD_LEFT);
+                }
+
+                $scheduled_time = $time_offset + strtotime(date('Y-m-' . $day_padded . ' ' . $hour_padded . ':' . $minute_padded . ':00', $current_time));
+
+                if ($scheduled_time < $current_time) {
+
+                    // 31st of feb, should = 28/29
+                    $future_time = strtotime('+28 days', $current_time); // 28 days is the shortest month, adding + 1 month can skip feb
+                    if (date('t', $future_time) < $day) {
+                        $day_padded = str_pad(date('t', $future_time), 2, 0, STR_PAD_LEFT);
+                    }
+
+                    $scheduled_time = $time_offset + strtotime(date('Y-m-' . $day_padded . ' ' . $hour_padded . ':' . $minute_padded . ':00', $future_time));
+                }
+                break;
+            case 'week':
+                // day 0-6 : 0 = SUNDAY
+                $day_str = '';
+                switch (intval($day)) {
+                    case 0:
+                        $day_str =  'sunday';
+                        break;
+                    case 1:
+                        $day_str =  'monday';
+                        break;
+                    case 2:
+                        $day_str =  'tuesday';
+                        break;
+                    case 3:
+                        $day_str =  'wednesday';
+                        break;
+                    case 4:
+                        $day_str =  'thursday';
+                        break;
+                    case 5:
+                        $day_str =  'friday';
+                        break;
+                    case 6:
+                        $day_str =  'saturday';
+                        break;
+                }
+                $scheduled_time = $time_offset + strtotime(date('Y-m-d ' . $hour_padded . ':' . $minute_padded . ':00', strtotime('next ' . $day_str, $current_time)));
+                if ($scheduled_time - WEEK_IN_SECONDS > $current_time) {
+                    $scheduled_time -= WEEK_IN_SECONDS;
+                }
+                break;
+            case 'day':
+                $scheduled_time = $time_offset + strtotime(date('Y-m-d ' . $hour_padded . ':' . $minute_padded . ':00', $current_time));
+                if ($scheduled_time <= $current_time) {
+                    $scheduled_time += DAY_IN_SECONDS;
+                }
+                break;
+            case 'hour':
+                $scheduled_time = strtotime(date('Y-m-d H:' . $minute_padded . ':00', $current_time));
+                if ($scheduled_time <= $current_time) {
+                    $scheduled_time += HOUR_IN_SECONDS;
+                }
+                break;
+        }
+
+        return $scheduled_time;
+    }
+
+    public function set_schedule($unit, $hour, $day = [])
+    {
+        $this->schedule['schedule'] = [
+            'unit' => $unit,
+            'hour' => $hour,
+            'day' => $day
+        ];
+    }
+
+    public function get_schedule($current_time)
+    {
+        if ($this->schedule['type'] != 'delay') {
+            return $current_time;
+        }
+
+        $schedule_time = -1;
+        $days = !empty($this->schedule['schedule']['day']) ? $this->schedule['schedule']['day'] : [0];
+        $hours = $this->schedule['schedule']['hour'];
+        if (empty($hours)) {
+            return $current_time;
+        }
+
+        foreach ($days as $day) {
+            foreach ($hours as $hour) {
+                $row_time = $this->calculate_scheduled_time($this->schedule['schedule']['unit'], $day, $hour, $current_time);
+                if ($schedule_time == -1 || $row_time < $schedule_time) {
+                    $schedule_time = $row_time;
+                }
+            }
+        }
+
+        if ($schedule_time == -1) {
+            return $current_time;
+        }
+
+        return $schedule_time;
+    }
+
     public function get_delay()
     {
-        $interval = isset($this->delay['interval'], $this->delay['unit']) ? intval($this->delay['interval']) : 0;
+        if ($this->schedule['type'] != 'delay') {
+            return 0;
+        }
+
+        $delay_settings = $this->schedule['delay'];
+        $interval = isset($delay_settings['interval'], $delay_settings['unit']) ? intval($delay_settings['interval']) : 0;
         if ($interval <= 0) {
             return 0;
         }
 
-        $unit = $this->delay['unit'];
+        $unit = $delay_settings['unit'];
         $delay = null;
 
         switch ($unit) {
@@ -272,15 +410,14 @@ class AutomationModel
         return $delay;
     }
 
-    public function set_delay($interval, $unit = 'day')
+    public function set_delay($interval = 0, $unit = 'day')
     {
+        $this->schedule['type'] = 'delay';
+
+
         $interval = intval($interval);
 
         switch ($unit) {
-            case 'day':
-            case 'days':
-                $unit = 'day';
-                break;
             case 'hour':
             case 'hours':
                 $unit = 'hour';
@@ -293,19 +430,17 @@ class AutomationModel
             case 'seconds':
                 $unit = 'second';
                 break;
+            case 'day':
+            case 'days':
             default:
-                $unit = false;
+                $unit = 'day';
                 break;
         }
 
-        if ($unit && $interval > 0) {
-            $this->delay = [
-                'interval' => $interval,
-                'unit' => $unit
-            ];
-        } else {
-            $this->delay = [];
-        }
+        $this->schedule['delay'] = [
+            'interval' => $interval,
+            'unit' => $unit
+        ];
     }
 
     public function data()
@@ -313,7 +448,7 @@ class AutomationModel
         return [
             'id' => $this->get_id(),
             'name' => $this->get_name(),
-            'delay' => $this->delay,
+            'schedule' => $this->schedule,
             'disabled' => $this->is_disabled() ? 'yes' : 'no',
             'event' => [
                 'id' => $this->get_event(),
