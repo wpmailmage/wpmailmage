@@ -193,6 +193,21 @@ class RestManager
             ),
         ));
 
+        register_rest_route($namespace, '/preview-data', array(
+            array(
+                'methods'             => \WP_REST_Server::CREATABLE,
+                'callback'            => array($this, 'get_preview_data'),
+                'permission_callback' => array($this, 'get_permission')
+            )
+        ));
+        register_rest_route($namespace, '/preview', array(
+            array(
+                'methods'             => \WP_REST_Server::CREATABLE,
+                'callback'            => array($this, 'preview'),
+                'permission_callback' => array($this, 'get_permission')
+            )
+        ));
+
         // register_rest_route($namespace, '/cart', array(
         //     array(
         //         'methods'             => \WP_REST_Server::CREATABLE,
@@ -200,6 +215,8 @@ class RestManager
         //         'permission_callback' => '__return_true'
         //     )
         // ));
+
+
     }
 
     public function get_permission()
@@ -442,5 +459,105 @@ class RestManager
         global $wpdb;
         $result = $wpdb->update($this->properties->table_automation_queue, ['status' => 'F', 'status_message' => 'Manually cancelled', 'ran' => current_time('mysql')], ['id' => $queue_id]);
         return $this->http->end_rest_success($result > 0 ? true : false);
+    }
+
+    public function get_preview_data(\WP_REST_Request $request)
+    {
+        $placeholders = $request->get_param('placeholders');
+        $result = [];
+
+        foreach ($placeholders as $placeholder) {
+            $data = [];
+            switch ($placeholder) {
+                case 'user':
+                    $user_query = new \WP_User_Query(['fields' => 'all', 'number' => 200]);
+                    $users = $user_query->get_results();
+                    $data = array_reduce($users, function ($carry, $item) {
+                        $carry[] = ['value' => $item->id, 'label' => 'User: ' . $item->display_name];
+                        return $carry;
+                    }, []);
+                    break;
+                case 'post':
+                    $query = new \WP_Query(['post_type' => 'post', 'posts_per_page' => 200]);
+                    $data = array_reduce($query->posts, function ($carry, $item) {
+                        $carry[] = ['value' => $item->ID, 'label' => 'Post: ' . $item->post_title];
+                        return $carry;
+                    }, []);
+                    break;
+                case 'wc_cart':
+
+                    /**
+                     * @var \WPDB $wpdb
+                     */
+                    global $wpdb;
+
+                    $carts = $wpdb->get_results("SELECT id, `session_id` FROM `{$this->properties->table_automation_woocommerce_carts}` LIMIT 200", ARRAY_A);
+                    $data = array_reduce($carts, function ($carry, $item) {
+                        $carry[] = ['value' => $item['session_id'], 'label' => 'Abandoned Cart #' . $item['id']];
+                        return $carry;
+                    }, []);
+                    break;
+                case 'wc_order':
+                    $orders = wc_get_orders(['numberposts' => 200]);
+                    // $query = new \WP_Query(['post_type' => 'shop_order', 'posts_per_page' => 200]);
+                    $data = array_reduce($orders, function ($carry, $item) {
+                        $carry[] = ['value' => $item->id, 'label' => 'Order #' . $item->id];
+                        return $carry;
+                    }, []);
+                    break;
+            }
+            $result[$placeholder] = $data;
+        }
+
+        return $this->http->end_rest_success($result);
+    }
+
+    /**
+     * @var \WP_Error
+     */
+    private $wp_mail_error = false;
+
+    public function preview(\WP_REST_Request $request)
+    {
+        $to = $request->get_param('email');
+
+        if (!is_email($to)) {
+            return $this->http->end_rest_error("Please enter a valid email address.");
+        }
+
+        $event_data = $request->get_param('event');
+        $event_data = $this->event_manager->load_event_data($event_data);
+
+        $settings = $request->get_param('settings');
+
+        $subject = $this->placeholder_manager->replace_placeholders($settings['subject'], $event_data);
+        $message = nl2br($settings['message']);
+        $message = $this->placeholder_manager->replace_placeholders($message, $event_data);
+
+        // load template
+        $templates = apply_filters('ewp/send_email/register_template', []);
+        $template_id = $settings['template'];
+        if (isset($templates[$template_id], $templates[$template_id]['class'])) {
+            $template = new $templates[$template_id]['class'];
+            $template->set_subject($subject);
+            $template->set_message($message);
+            $message = $template->render();
+        }
+
+        $headers = ["Content-Type: text/html"];
+
+        add_action('wp_mail_failed', [$this, 'capture_wp_mail_error']);
+
+        $result = wp_mail($to, 'Preview: ' . $subject, $message, $headers);
+        if (!$result) {
+            return $this->http->end_rest_error($this->wp_mail_error->get_error_message());
+        }
+
+        return $this->http->end_rest_success(sprintf('Preview email sent to %s.', $to));
+    }
+
+    public function capture_wp_mail_error($wp_error)
+    {
+        $this->wp_mail_error = $wp_error;
     }
 }

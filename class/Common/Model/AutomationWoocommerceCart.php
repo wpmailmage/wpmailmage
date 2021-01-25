@@ -265,7 +265,7 @@ class AutomationWoocommerceCart
 
     public function get_formatted_billing_full_name()
     {
-        return sprintf(_x('%1$s %2$s', 'full name', 'woocommerce'), $this->get_billing_first_name(), $this->get_billing_last_name());
+        return trim(sprintf(_x('%1$s %2$s', 'full name', 'woocommerce'), $this->get_billing_first_name(), $this->get_billing_last_name()));
     }
 
     /**
