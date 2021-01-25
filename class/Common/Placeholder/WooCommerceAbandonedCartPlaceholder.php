@@ -77,7 +77,7 @@ class WooCommerceAbandonedCartPlaceholder extends AbstractWooCommercePlaceholder
         $show_image = true;
 
         ob_start(); ?>
-        <div>
+        <div style="margin-bottom: 40px;">
             <table class="td" cellspacing="0" cellpadding="6" style="width: 100%; font-family: 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif;" border="1">
                 <thead>
                     <tr>

@@ -18,54 +18,9 @@ class WooCommerceSendEmailTemplate
 
     public function render()
     {
-        return $this->header($this->_subject) . $this->_message . $this->footer($this->_message);
-    }
-
-    public function header($email_heading)
-    {
-        $output = '';
-        $output .= $this->replace_wc_placeholders(wc_get_template_html('emails/email-header.php', ['email_heading' => $email_heading]));
-        return $output;
-    }
-
-    public function footer()
-    {
-        $output = '';
-        $output .= $this->replace_wc_placeholders(wc_get_template_html('emails/email-footer.php'));
-        $output .= '<style type="text/css">' . wc_get_template_html('emails/email-styles.php') . '</style>';
-        return $output;
-    }
-
-    /**
-     * Get blog name formatted for emails.
-     *
-     * @return string
-     */
-    private function get_blogname()
-    {
-        return wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
-    }
-
-    private function replace_wc_placeholders($string)
-    {
-        $domain = wp_parse_url(home_url(), PHP_URL_HOST);
-
-        return str_replace(
-            array(
-                '{site_title}',
-                '{site_address}',
-                '{site_url}',
-                '{woocommerce}',
-                '{WooCommerce}',
-            ),
-            array(
-                $this->get_blogname(),
-                $domain,
-                $domain,
-                '<a href="https://woocommerce.com">WooCommerce</a>',
-                '<a href="https://woocommerce.com">WooCommerce</a>',
-            ),
-            $string
-        );
+        $email = new \WC_Email();
+        $message = WC()->mailer()->wrap_message($this->_subject, $this->_message);
+        $message = apply_filters('woocommerce_mail_content', $email->style_inline($message));
+        return $message;
     }
 }
