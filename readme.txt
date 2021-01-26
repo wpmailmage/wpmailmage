@@ -3,7 +3,7 @@ Contributors: mailmage
 Tags: automation, automate, abandoned cart, product reviews, woocommerce, email
 Requires at least: 4.0
 Tested up to: 5.6
-Stable tag: 0.0.13
+Stable tag: 0.0.14
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -34,6 +34,11 @@ You are able to create a single automation that takes advantages of all Mail mag
 == Screenshots ==
 
 == Changelog ==
+
+= 0.0.14 = 
+
+* Added pagination to Automation queue
+* Updated LogAction to only write to file when EWP_DEBUG is defined, while still adding log to activity reports
 
 = 0.0.13 = 
 

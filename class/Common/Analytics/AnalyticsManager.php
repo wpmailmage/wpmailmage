@@ -290,60 +290,71 @@ class AnalyticsManager
         $automation_model = $automation_manager->get_automation_model($id);
         $event = $automation_model->get_event();
         $action = $automation_model->get_action();
-        $trigger_event = $action === 'log' ? 'email|log' : 'email';
+        $trigger_event = 'email';
 
-        switch ($event) {
-            case 'woocommerce.abandoned_cart':
-                list($chart_data, $ticks) = $this->get_chart_data($id, time(), 0, 'day', 'jS M', [$trigger_event, 'recovered::wc_cart']);
-                $data[] = [
-                    'id' => 'abandoned-cart',
-                    'title' => 'Abandoned Carts',
-                    'legends' => ['Abandoned', 'Recovered'],
-                    'ticks' => $ticks,
-                    'data' => $chart_data
-                ];
-                break;
-            case 'woocommerce.order_status':
-                // TODO: Check if the action contains review items 
-                list($chart_data, $ticks, $totals) = $this->get_chart_data($id, time(), 0, 'day', 'jS M', [$trigger_event, 'read', 'wc_review']);
-
-                $legends = ['Emails sent - ' . $totals[0], 'Emails read - ' . $totals[1]];
-                $title = 'Reports';
-                if ($totals[2] > 0) {
-                    $legends[] = 'Products Reviewed - ' . $totals[2];
-                    $title = 'Products Reviewed';
-                }
-
-                $data[] = [
-                    'id' => 'reviews',
-                    'title' => $title,
-                    'legends' => $legends,
-                    'ticks' => $ticks,
-                    'data' => $chart_data
-                ];
-
-                // if the action contains coupon generation
-                list($chart_data, $ticks, $totals) = $this->get_chart_data($id, time(), 0, 'day', 'jS M', [$trigger_event, 'read', 'generate::wc_coupon', 'used::wc_coupon']);
-                if ($totals[2] > 0) {
+        if ($action == 'email') {
+            switch ($event) {
+                case 'woocommerce.abandoned_cart':
+                    list($chart_data, $ticks) = $this->get_chart_data($id, time(), 0, 'day', 'jS M', [$trigger_event, 'recovered::wc_cart']);
                     $data[] = [
-                        'id' => 'coupons',
-                        'title' => 'Coupons Used',
-                        'legends' => ['Emails sent - ' . $totals[0], 'Emails read - ' . $totals[1], 'Coupons created - ' . $totals[2], 'Coupons used - ' . $totals[3]],
+                        'id' => 'abandoned-cart',
+                        'title' => 'Abandoned Carts',
+                        'legends' => ['Abandoned', 'Recovered'],
                         'ticks' => $ticks,
                         'data' => $chart_data
                     ];
-                }
-                break;
-            default:
-                list($chart_data, $ticks, $totals) = $this->get_chart_data($id, time(), 0, 'day', 'jS M', [$trigger_event, 'read']);
-                $data[] = [
-                    'id' => 'General',
-                    'title' => 'All time',
-                    'legends' => ['Emails sent - ' . $totals[0], 'Emails read - ' . $totals[1]],
-                    'ticks' => $ticks,
-                    'data' => $chart_data
-                ];
-                break;
+                    break;
+                case 'woocommerce.order_status':
+                    // TODO: Check if the action contains review items 
+                    list($chart_data, $ticks, $totals) = $this->get_chart_data($id, time(), 0, 'day', 'jS M', [$trigger_event, 'read', 'wc_review']);
+
+                    $legends = ['Emails sent - ' . $totals[0], 'Emails read - ' . $totals[1]];
+                    $title = 'Reports';
+                    if ($totals[2] > 0) {
+                        $legends[] = 'Products Reviewed - ' . $totals[2];
+                        $title = 'Products Reviewed';
+                    }
+
+                    $data[] = [
+                        'id' => 'reviews',
+                        'title' => $title,
+                        'legends' => $legends,
+                        'ticks' => $ticks,
+                        'data' => $chart_data
+                    ];
+
+                    // if the action contains coupon generation
+                    list($chart_data, $ticks, $totals) = $this->get_chart_data($id, time(), 0, 'day', 'jS M', [$trigger_event, 'read', 'generate::wc_coupon', 'used::wc_coupon']);
+                    if ($totals[2] > 0) {
+                        $data[] = [
+                            'id' => 'coupons',
+                            'title' => 'Coupons Used',
+                            'legends' => ['Emails sent - ' . $totals[0], 'Emails read - ' . $totals[1], 'Coupons created - ' . $totals[2], 'Coupons used - ' . $totals[3]],
+                            'ticks' => $ticks,
+                            'data' => $chart_data
+                        ];
+                    }
+                    break;
+                default:
+                    list($chart_data, $ticks, $totals) = $this->get_chart_data($id, time(), 0, 'day', 'jS M', [$trigger_event, 'read']);
+                    $data[] = [
+                        'id' => 'General',
+                        'title' => 'All time',
+                        'legends' => ['Emails sent - ' . $totals[0], 'Emails read - ' . $totals[1]],
+                        'ticks' => $ticks,
+                        'data' => $chart_data
+                    ];
+                    break;
+            }
+        } elseif ($action == 'log') {
+            list($chart_data, $ticks, $totals) = $this->get_chart_data($id, time(), 0, 'day', 'jS M', ['log']);
+            $data[] = [
+                'id' => 'Events Logged',
+                'title' => 'All time',
+                'legends' => ['Event Logs - ' . $totals[0]],
+                'ticks' => $ticks,
+                'data' => $chart_data
+            ];
         }
 
         foreach ($this->_trackers as $tracker) {

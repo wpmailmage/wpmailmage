@@ -337,6 +337,8 @@ class RestManager
     public function get_queue(\WP_REST_Request $request)
     {
         $id = intval($request->get_param('id'));
+        $page = intval($request->get_param('page'));
+        $per_page = intval($request->get_param('per_page'));
         $output = [];
 
         $where = '';
@@ -344,16 +346,22 @@ class RestManager
             $where = " AND automation_id = '" . $id . "'";
         }
 
+        $per_page = $per_page > 0 ? $per_page : 10;
+        $page = $page > 1 ? $page : 1;
+        $limit = ' LIMIT ' . ($page - 1) * $per_page . ',' . $per_page;
+
         /**
          * @var \WPDB $wpdb
          */
         global $wpdb;
         $output = [];
-        $results = $wpdb->get_results("SELECT * FROM {$this->properties->table_automation_queue} WHERE 1=1 " . $where . " ORDER BY scheduled DESC, modified DESC", ARRAY_A);
+        $results = $wpdb->get_results("SELECT * FROM {$this->properties->table_automation_queue} WHERE 1=1 " . $where . " ORDER BY scheduled DESC, modified DESC" . $limit, ARRAY_A);
         foreach ($results as $row) {
             $automation_queue_model = new AutomationQueueModel($row);
             $output[] = $automation_queue_model->data();
         }
+
+        $total = $wpdb->get_var("SELECT COUNT(*) FROM {$this->properties->table_automation_queue} WHERE 1=1 " . $where);
 
         $last_ran = get_option('ewp_last_ran');
         if ($last_ran) {
@@ -362,12 +370,13 @@ class RestManager
             // $last_ran = date('Y-m-d H:i:s', $last_ran);
         }
 
-        return $this->http->end_rest_success(['data' => $output, 'updated' => $last_ran]);
+        return $this->http->end_rest_success(['data' => $output, 'updated' => $last_ran, 'total' => intval($total), 'page' => $page]);
     }
 
     public function get_logs(\WP_REST_Request $request)
     {
         $id = intval($request->get_param('id'));
+        $page = intval($request->get_param('page'));
         $output = [];
 
         $where = '';
@@ -375,12 +384,16 @@ class RestManager
             $where = " AND automation_id = '" . $id . "'";
         }
 
+        $per_page = 10;
+        $page = $page > 1 ? $page : 1;
+        $limit = ' LIMIT ' . ($page - 1) * $per_page . ',' . $per_page;
+
         /**
          * @var \WPDB $wpdb
          */
         global $wpdb;
         $output = [];
-        $results = $wpdb->get_results("SELECT * FROM {$this->properties->table_automation_queue} WHERE 1=1 AND (status = 'Y' OR status = 'F') " . $where . " ORDER BY modified DESC", ARRAY_A);
+        $results = $wpdb->get_results("SELECT * FROM {$this->properties->table_automation_queue} WHERE 1=1 AND (status = 'Y' OR status = 'F') " . $where . " ORDER BY modified DESC" . $limit, ARRAY_A);
         foreach ($results as $row) {
             $automation_queue_model = new AutomationQueueModel($row);
             $output[] = $automation_queue_model->data();
