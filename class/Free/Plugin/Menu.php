@@ -9,7 +9,7 @@ class Menu extends \EmailWP\Common\Plugin\Menu
 {
     final public function load_assets()
     {
-        wp_register_script($this->properties->plugin_domain . '-bundle', plugin_dir_url($this->properties->plugin_file_path) . 'dist/js/core.js', array(), $this->properties->plugin_version, 'all');
+        wp_register_script($this->properties->plugin_domain . '-bundle', plugin_dir_url($this->properties->plugin_file_path) . 'dist/js/core.js', array('wp-polyfill'), $this->properties->plugin_version, 'all');
 
         $matches = false;
         preg_match('/^https?:\/\/[^\/]+(.*?)$/', admin_url('/tools.php?page=' . $this->properties->plugin_domain), $matches);

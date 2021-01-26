@@ -96,7 +96,14 @@ class WooCommerceTracker
 
         // Track coupon codes used.
         $order = wc_get_order($order_id);
-        $coupons = $order->get_coupon_codes();
+
+        $coupons = false;
+        if (version_compare(WC()->version, '3.7', '>=')) {
+            $coupons = $order->get_coupon_codes();
+        } elseif (method_exists($order, 'get_used_coupons')) {
+            $coupons = $order->get_used_coupons();
+        }
+
         if ($coupons) {
             foreach ($coupons as $code) {
                 $used_coupon_queue_id = $wpdb->get_var("SELECT `queue_id` FROM {$properties->table_automation_queue_activity} WHERE `type`='generate::wc_coupon' AND `data`='" . $code . "' LIMIT 1");
