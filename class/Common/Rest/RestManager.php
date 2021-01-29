@@ -554,7 +554,14 @@ class RestManager
             $template = new $templates[$template_id]['class'];
             $template->set_subject($subject);
             $template->set_message($message);
+            if (!isset($settings['show_unsubscribe']) || $settings['show_unsubscribe'] !== 'no') {
+                $template->add_unsubscribe_url(add_query_arg(['ewp_unsubscribe' => urlencode(base64_encode('preview'))], site_url()));
+            }
             $message = $template->render();
+        } else {
+            if (!isset($settings['show_unsubscribe']) || $settings['show_unsubscribe'] !== 'no') {
+                $message .= sprintf('<br /><br /><a href="%s">Unsubscribe</a>', add_query_arg(['ewp_unsubscribe' => urlencode(base64_encode('preview'))], site_url()));
+            }
         }
 
         $headers = ["Content-Type: text/html"];

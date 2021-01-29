@@ -22,6 +22,7 @@ class Migrations
         $this->_migrations[] = array($this, 'migration_03');
         $this->_migrations[] = array($this, 'migration_04');
         $this->_migrations[] = array($this, 'migration_05');
+        $this->_migrations[] = array($this, 'migration_06');
     }
 
     public function isSetup()
@@ -215,5 +216,24 @@ class Migrations
                 add_filter('content_save_pre', 'wp_filter_post_kses');
             }
         }
+    }
+
+    public function migration_06($migrate_data = true)
+    {
+        $charset_collate = $this->get_charset();
+
+        $sql = "CREATE TABLE `" . $this->properties->table_subscribers . "` (
+					  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+                      `first_name` varchar(255) DEFAULT NULL,
+                      `last_name` varchar(255) DEFAULT NULL,
+                      `email` varchar(255) DEFAULT NULL,
+                      `activation` varchar(255) DEFAULT NULL,
+                      `source` varchar(255) DEFAULT NULL,
+					  `status` char(1) DEFAULT 'Y',
+                      `created` timestamp NULL DEFAULT NULL,
+                      `modified` timestamp NULL DEFAULT NULL,
+					  PRIMARY KEY (`id`)
+					) $charset_collate; ";
+        dbDelta($sql);
     }
 }

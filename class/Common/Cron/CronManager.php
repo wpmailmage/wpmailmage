@@ -46,19 +46,22 @@ class CronManager
 
     public function runner()
     {
+        /**
+         * @var \WPDB $wpdb
+         */
+        global $wpdb;
+
         update_option('ewp_last_ran', current_time('timestamp'));
         $max_time = 30;
         $start_time = time();
         $times = [];
         $avg_time = 0;
 
+        $max_emails_per_hour = intval(get_option('ewp_max_hourly_emails', 100));
+
         // Process WooCommerce Abandoned Carts older than 60 minutes
         do {
             $row_start = time();
-            /**
-             * @var \WPDB $wpdb
-             */
-            global $wpdb;
             $query = "SELECT * FROM `" . $this->properties->table_automation_woocommerce_carts . "` WHERE `abandoned` IS NULL AND `modified` <= '" . date('Y-m-d H:i:s', current_time('timestamp') - 3600) . "'  LIMIT 1";
             $row = $wpdb->get_row($query, ARRAY_A);
             if (empty($row)) {
@@ -80,13 +83,17 @@ class CronManager
         $times = [];
         $avg_time = 0;
 
+        $check_time = current_time('timestamp') - HOUR_IN_SECONDS;
+
         do {
             $row_start = time();
-            /**
-             * @var \WPDB $wpdb
-             */
-            global $wpdb;
-            $row = $wpdb->get_row("SELECT * FROM `" . $this->properties->table_automation_queue . "` WHERE (status='S' and scheduled <= NOW()) OR ((status='E' OR status='R') AND automation_id IN (" . implode(',', $enabled_automation_ids) . ") and modified <= NOW() and ran < NOW() - INTERVAL 5 MINUTE) LIMIT 1", ARRAY_A);
+
+            $email_sent_check = intval($wpdb->get_var("SELECT COUNT(*) FROM {$this->properties->table_automation_queue_activity} WHERE `type` = 'email' AND `created` >= '" . date('Y-m-d H:i:s', $check_time) . "'"));
+            if ($email_sent_check >= $max_emails_per_hour) {
+                $limit_where = " AND action_name != 'send_email' ";
+            }
+
+            $row = $wpdb->get_row("SELECT * FROM `" . $this->properties->table_automation_queue . "` WHERE ( (status='S' and scheduled <= NOW()) OR ((status='E' OR status='R') AND automation_id IN (" . implode(',', $enabled_automation_ids) . ") and modified <= NOW() and ran < NOW() - INTERVAL 5 MINUTE) ) " . $limit_where . " LIMIT 1", ARRAY_A);
             if (empty($row)) {
                 break;
             }

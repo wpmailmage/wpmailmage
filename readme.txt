@@ -3,7 +3,7 @@ Contributors: mailmage
 Tags: automation, automate, abandoned cart, product reviews, woocommerce, email
 Requires at least: 4.0
 Tested up to: 5.6
-Stable tag: 0.0.15
+Stable tag: 0.0.16
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -34,6 +34,17 @@ You are able to create a single automation that takes advantages of all Mail mag
 == Screenshots ==
 
 == Changelog ==
+
+= 0.0.16 =
+
+* Added subscribers table to keep track of unsubscribed emails
+* Added check for unsubscribed users before sending
+* Added limit to stop email spamming to same address, defaults 10 minutes on same automation
+* Added dropdown to enable unsubscribe link added to email footer
+* Added basic styled unsubscribe pages
+* Added unsubscribe preview link to test email
+* Fixed issue with WC_Email
+* Add hourly sending limit 
 
 = 0.0.15 = 
 

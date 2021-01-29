@@ -26,6 +26,7 @@ class Properties
     public $table_automation_queue;
     public $table_automation_queue_activity;
     public $table_automation_woocommerce_carts;
+    public $table_subscribers;
     protected $rest_nonce;
 
     public function __construct()
@@ -48,6 +49,7 @@ class Properties
         $this->table_automation_queue = $wpdb->prefix . 'ewp_automation_queue';
         $this->table_automation_queue_activity = $wpdb->prefix . 'ewp_automation_queue_activity';
         $this->table_automation_woocommerce_carts = $wpdb->prefix . 'ewp_automation_woocommerce_carts';
+        $this->table_subscribers = $wpdb->prefix . 'ewp_subscribers';
     }
 
     public function generate_file_paths()

@@ -6,6 +6,7 @@ use DateTime;
 use EmailWP\Common\Automation\AutomationManager;
 use EmailWP\Common\Placeholder\PlaceholderManager;
 use EmailWP\Common\Properties\Properties;
+use EmailWP\Common\UI\ViewManager;
 use EmailWP\Container;
 
 class AnalyticsManager
@@ -49,6 +50,7 @@ class AnalyticsManager
     public function register_query_vars($query_vars)
     {
         $query_vars[] = 'ewp_ref_session';
+        $query_vars[] = 'ewp_unsubscribe';
         return $query_vars;
     }
 
@@ -84,6 +86,70 @@ class AnalyticsManager
             } else {
                 setcookie($this->_cookie_key, strval($session), time() + MONTH_IN_SECONDS, '/', $domain);
             }
+        }
+
+        $unsubscribe_email = get_query_var('ewp_unsubscribe', '');
+        if ($unsubscribe_email) {
+
+            $unsubscribe_email = base64_decode(urldecode($unsubscribe_email));
+
+            /**
+             * @var \WPDB $wpdb
+             */
+            global $wpdb;
+
+            /**
+             * @var Properties $properties
+             */
+            $properties = Container::getInstance()->get('properties');
+
+            /**
+             * @var ViewManager $view_manager
+             */
+            $view_manager = Container::getInstance()->get('view_manager');
+
+            // escape early if preview email link
+            if ($unsubscribe_email === 'preview') {
+                $view_manager->view('unsubscribe/success', compact(['view_manager']));
+                exit;
+            }
+
+            $subscriber = $wpdb->get_row("SELECT * FROM {$properties->table_subscribers} WHERE LOWER(email)='" . strtolower($unsubscribe_email) . "' LIMIT 1", ARRAY_A);
+            if ($subscriber['status'] == 'U') {
+                $view_manager->view('unsubscribe/success', compact(['view_manager']));
+                exit;
+            }
+
+            $result = false;
+            $subscriber_id = null;
+
+            if ($subscriber) {
+                $subscriber_id = intval($subscriber['id']);
+
+                if ($subscriber_id > 0) {
+                    $result = $wpdb->update($properties->table_subscribers, [
+                        'status' => 'U',
+                        'modified' => current_time('mysql')
+                    ], ['id' => $subscriber_id]);
+                }
+            } else {
+                $created = current_time('mysql');
+                $result = $wpdb->insert($properties->table_subscribers, [
+                    'email' => $unsubscribe_email,
+                    'created' => $created,
+                    'modified' => $created,
+                    'status' => 'U',
+                    'source' => 'automation'
+                ]);
+            }
+
+            if ($result) {
+                $view_manager->view('unsubscribe/success', compact(['view_manager']));
+                exit;
+            }
+
+            $view_manager->view('unsubscribe/error', compact(['view_manager']));
+            exit;
         }
     }
 

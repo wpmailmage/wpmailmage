@@ -2,6 +2,8 @@
 
 namespace EmailWP\Common\Action;
 
+use EmailWP\Common\Properties\Properties;
+use EmailWP\Common\Util\Logger;
 use EmailWP\Container;
 
 class SendEmailAction extends Action
@@ -32,6 +34,15 @@ class SendEmailAction extends Action
             'options' => $templates,
             'placeholder' => false,
             'tooltip' => 'Select which email template to use.'
+        ]);
+        $this->register_field('Show unsubscribe link', 'show_unsubscribe', [
+            'type' => 'select',
+            'options' => [
+                ['value' => 'yes', 'label' => 'Yes'],
+                ['value' => 'no', 'label' => 'No'],
+            ],
+            'default' => 'yes',
+            'placeholder' => false
         ]);
         $this->register_field('To', 'to', ['tooltip' => 'Set the email recipient, seperate multiple emails with a “,”.' . $text_variable_msg]);
         $this->register_field('Cc', 'cc');
@@ -103,21 +114,92 @@ class SendEmailAction extends Action
         return $html;
     }
 
+    private function get_subscriber_id($email)
+    {
+        /**
+         * @var \WPDB $wpdb
+         */
+        global $wpdb;
+
+        /**
+         * @var Properties $properties
+         */
+        $properties = Container::getInstance()->get('properties');
+
+        $subscriber = $wpdb->get_row("SELECT * FROM {$properties->table_subscribers} WHERE LOWER(email)='" . strtolower($email) . "' LIMIT 1", ARRAY_A);
+        $subscriber_id = null;
+        if ($subscriber) {
+            if ($subscriber['status'] == 'U') {
+                return false;
+            }
+
+            $subscriber_id = $subscriber['id'];
+        } else {
+            $created = current_time('mysql');
+            $wpdb->insert($properties->table_subscribers, [
+                'email' => $email,
+                'created' => $created,
+                'modified' => $created,
+                'status' => 'Y',
+                'source' => 'automation'
+            ]);
+
+            $subscriber_id = $wpdb->insert_id;
+        }
+
+        return $subscriber_id;
+    }
+
+    private function email_limit_reached($to, $subscriber_id, $automation_id)
+    {
+        /**
+         * @var \WPDB $wpdb
+         */
+        global $wpdb;
+
+        /**
+         * @var Properties $properties
+         */
+        $properties = Container::getInstance()->get('properties');
+
+        $minutes_wait = intval(get_site_option('ewp_email_delay', 10));
+        if ($minutes_wait == 0) {
+            return false;
+        }
+
+        $last_sent = $wpdb->get_var("SELECT a.created FROM {$properties->table_automation_queue_activity} as a INNER JOIN wp_ewp_automation_queue as q ON a.queue_id=q.id WHERE a.type='email' AND a.data=" . $subscriber_id . " AND q.automation_id=" . $automation_id . " ORDER BY a.created DESC LIMIT 1");
+        if ($last_sent && strtotime($last_sent) >= current_time('timestamp') - (MINUTE_IN_SECONDS * $minutes_wait)) {
+            $this->set_log_message('Email already sent to ' . $to . ' within last ' . $minutes_wait . ' minutes.');
+            return true;
+        }
+
+        return false;
+    }
+
+    public function get_unsubscribe_url($email)
+    {
+        return add_query_arg(['ewp_unsubscribe' => base64_encode($email)], site_url());
+    }
+
     public function run($event_data = [])
     {
+        /**
+         * @var \WPDB $wpdb
+         */
+        global $wpdb;
+
+        /**
+         * @var Properties $properties
+         */
+        $properties = Container::getInstance()->get('properties');
+
         if (!isset($event_data['_action'])) {
             $recipients = explode(',', $this->replace_placeholders($this->get_to(), $event_data));
             $recipients = array_filter(array_map('trim', $recipients));
             $queue_id = intval($event_data['queue_id']);
-            if (count($recipients) > 1 && $queue_id > 1) {
+            if (count($recipients) > 1 && $queue_id > 0) {
 
                 // TODO: Remove need of duplicate action_data, can get this from parent_id
-
-                /**
-                 * @var \WPDB $wpdb
-                 */
-                global $wpdb;
-                $properties = Container::getInstance()->get('properties');
 
                 $row = $wpdb->get_row("SELECT * FROM {$properties->table_automation_queue} WHERE id='" . $queue_id . "'", ARRAY_A);
                 if (!$row) {
@@ -143,14 +225,25 @@ class SendEmailAction extends Action
 
                 $this->set_log_message(count($recipients) . ' Emails added to queue.');
                 return true;
-            } elseif (count($recipients) == 1 && $queue_id > 1) {
-                $to = $recipients[0];
+            } elseif (count($recipients) == 1 && $queue_id > 0) {
+                $to = trim($recipients[0]);
             } else {
                 $this->set_log_message('No Email recipents.');
                 return false;
             }
         } else {
-            $to = $event_data['_action']['to'];
+            $to = trim($event_data['_action']['to']);
+        }
+
+        $subscriber_id = $this->get_subscriber_id($to);
+        if (!$subscriber_id) {
+            $this->set_log_message('Email' . $to . ' is unsubscribed');
+            return false;
+        }
+
+        // Escape if automation has already sent email to address.
+        if ($this->email_limit_reached($to, $subscriber_id, $event_data['automation_id'])) {
+            return false;
         }
 
         $cc = $this->replace_placeholders($this->get_cc(), $event_data);
@@ -167,7 +260,14 @@ class SendEmailAction extends Action
             $template = new $this->_templates[$template_id]['class'];
             $template->set_subject($subject);
             $template->set_message($message);
+            if ($this->get_setting('show_unsubscribe') !== 'no') {
+                $template->add_unsubscribe_url($this->get_unsubscribe_url($to));
+            }
             $message = $template->render();
+        } else {
+            if ($this->get_setting('show_unsubscribe') !== 'no') {
+                $message .= sprintf('<br /><br /><a href="%s">Unsubscribe</a>', $this->get_unsubscribe_url($to));
+            }
         }
 
         add_action('wp_mail_failed', [$this, 'capture_error']);
@@ -204,16 +304,11 @@ class SendEmailAction extends Action
             return $this->get_error();
         }
 
-        /**
-         * @var \WPDB $wpdb
-         */
-        global $wpdb;
-
-        $properties = Container::getInstance()->get('properties');
         $wpdb->insert($properties->table_automation_queue_activity, [
             'queue_id' => intval($event_data['queue_id']),
             'type' => 'email',
-            'created' => current_time('mysql')
+            'created' => current_time('mysql'),
+            'data' => $subscriber_id
         ]);
 
         $this->set_log_message('Email sent to ' . $to);
