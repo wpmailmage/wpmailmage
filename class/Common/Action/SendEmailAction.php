@@ -2,6 +2,7 @@
 
 namespace EmailWP\Common\Action;
 
+use EmailWP\Common\Action\SendEmailTemplate\DefaultSendEmailTemplate;
 use EmailWP\Common\Properties\Properties;
 use EmailWP\Common\Util\Logger;
 use EmailWP\Container;
@@ -13,16 +14,19 @@ class SendEmailAction extends Action
     {
         parent::__construct($id, $settings);
 
-        $this->_templates = apply_filters('ewp/send_email/register_template', []);
+        $this->_templates = apply_filters('ewp/send_email/register_template', [
+            'default' => [
+                'label' => 'Default',
+                'class' => DefaultSendEmailTemplate::class
+            ]
+        ]);
 
         $this->register_fields();
     }
 
     public function register_fields()
     {
-        $templates = [
-            ['value' => '', 'label' => 'Default']
-        ];
+        $templates = [];
         foreach ($this->_templates as $template_id => $template_data) {
             $templates[] = ['value' => $template_id, 'label' => $template_data['label']];
         }
@@ -246,29 +250,29 @@ class SendEmailAction extends Action
             return false;
         }
 
+        // load template
+        $template_id = $this->get_setting('template');
+        $template_id = !empty($template_id) && isset($this->_templates[$template_id]) ? $template_id : 'default';
+        $template = new $this->_templates[$template_id]['class'];
+
         $cc = $this->replace_placeholders($this->get_cc(), $event_data);
         $bcc = $this->replace_placeholders($this->get_bcc(), $event_data);
+
         $subject = $this->replace_placeholders($this->get_subject(), $event_data);
+
         $message = nl2br($this->get_message());
         $message = $this->replace_placeholders($message, $event_data);
         $message = $this->add_link_tracking($message, $event_data);
         $message .= $this->add_tracking_img($event_data['queue_id']);
 
-        // load template
-        $template_id = $this->get_setting('template');
-        if (isset($this->_templates[$template_id], $this->_templates[$template_id]['class'])) {
-            $template = new $this->_templates[$template_id]['class'];
-            $template->set_subject($subject);
-            $template->set_message($message);
-            if ($this->get_setting('show_unsubscribe') !== 'no') {
-                $template->add_unsubscribe_url($this->get_unsubscribe_url($to));
-            }
-            $message = $template->render();
-        } else {
-            if ($this->get_setting('show_unsubscribe') !== 'no') {
-                $message .= sprintf('<br /><br /><a href="%s">Unsubscribe</a>', $this->get_unsubscribe_url($to));
-            }
+        $template->set_subject($subject);
+        $template->set_message($message);
+        if ($this->get_setting('show_unsubscribe') !== 'no') {
+            $template->add_unsubscribe_url($this->get_unsubscribe_url($to));
         }
+
+        $message = $template->render();
+        unset($template);
 
         add_action('wp_mail_failed', [$this, 'capture_error']);
 

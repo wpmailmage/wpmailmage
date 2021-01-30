@@ -2,6 +2,7 @@
 
 namespace EmailWP\Common\Migration;
 
+use EmailWP\Common\Model\AutomationWoocommerceCart;
 use EmailWP\Common\Properties\Properties;
 
 class Migrations
@@ -23,6 +24,7 @@ class Migrations
         $this->_migrations[] = array($this, 'migration_04');
         $this->_migrations[] = array($this, 'migration_05');
         $this->_migrations[] = array($this, 'migration_06');
+        $this->_migrations[] = array($this, 'migration_07');
     }
 
     public function isSetup()
@@ -235,5 +237,22 @@ class Migrations
 					  PRIMARY KEY (`id`)
 					) $charset_collate; ";
         dbDelta($sql);
+    }
+
+    public function migration_07($migrate_data = true)
+    {
+        /**
+         * @var \WPDB $wpdb
+         */
+        global $wpdb;
+
+        $sql = "ALTER TABLE `" . $this->properties->table_automation_woocommerce_carts . "` ADD COLUMN `total` DECIMAL(8, 2) DEFAULT NULL;";
+        $wpdb->query($sql);
+
+        $rows = $wpdb->get_results("SELECT * FROM {$this->properties->table_automation_woocommerce_carts} WHERE abandoned IS NOT NULL", ARRAY_A);
+        foreach ($rows as $row) {
+            $model = new AutomationWoocommerceCart($row);
+            $wpdb->update($this->properties->table_automation_woocommerce_carts, ['total' => $model->get_cart_total()], ['id' => $row['id']]);
+        }
     }
 }

@@ -4,6 +4,7 @@ namespace EmailWP\Common\Placeholder;
 
 use EmailWP\Common\Model\AutomationWoocommerceCart;
 use EmailWP\Common\PlaceholderInterface;
+use EmailWP\Container;
 
 class WooCommerceAbandonedCartPlaceholder extends AbstractWooCommercePlaceholder implements
     PlaceholderInterface
@@ -54,7 +55,21 @@ class WooCommerceAbandonedCartPlaceholder extends AbstractWooCommercePlaceholder
     {
         $link = $this->replace_view_link($data, $args);
         $text = isset($args['text']) && !empty($args['text']) ? $args['text'] : 'View cart';
-        return '<a href="' . $link . '">' . $text . '</a>';
+        // return '<a href="' . $link . '">' . $text . '</a>';
+
+        /**
+         * @var ViewManager $view_manager
+         */
+        $view_manager = Container::getInstance()->get('view_manager');
+
+        ob_start();
+
+        $view_manager->view('emails/elements/button', apply_filters('ewp_email_button_args', [
+            'url' => $link,
+            'text' => $text
+        ]));
+
+        return ob_get_clean();
     }
 
     public function replace_restore_link($data, $args = [])

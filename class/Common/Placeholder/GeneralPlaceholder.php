@@ -3,6 +3,7 @@
 namespace EmailWP\Common\Placeholder;
 
 use EmailWP\Common\PlaceholderInterface;
+use EmailWP\Container;
 
 class GeneralPlaceholder extends AbstractPlaceholder implements PlaceholderInterface
 {
@@ -17,7 +18,8 @@ class GeneralPlaceholder extends AbstractPlaceholder implements PlaceholderInter
             'posts' => [$this, 'replace_posts'],
             'user_emails' => [$this, 'replace_users'],
             'name' => [$this, 'repalce_name'],
-            'description' => [$this, 'replace_description']
+            'description' => [$this, 'replace_description'],
+            'button' => [$this, 'replace_button'],
         ];
     }
 
@@ -82,6 +84,20 @@ class GeneralPlaceholder extends AbstractPlaceholder implements PlaceholderInter
         </div>
 <?php
         wp_reset_postdata();
+
+        return ob_get_clean();
+    }
+
+    public function replace_button($data, $args = [])
+    {
+        /**
+         * @var ViewManager $view_manager
+         */
+        $view_manager = Container::getInstance()->get('view_manager');
+
+        ob_start();
+
+        $view_manager->view('emails/elements/button', apply_filters('ewp_email_button_args', $args));
 
         return ob_get_clean();
     }

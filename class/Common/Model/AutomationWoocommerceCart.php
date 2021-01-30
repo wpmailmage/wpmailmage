@@ -13,6 +13,7 @@ class AutomationWoocommerceCart
     protected $_user_id;
     protected $_cart;
     protected $_data;
+    protected $_total;
     protected $_abandoned;
     protected $_created;
     protected $_modified;
@@ -31,6 +32,7 @@ class AutomationWoocommerceCart
             $this->_user_id = isset($data['user_id']) ? $data['user_id'] : null;
             $this->set_cart_raw(isset($data['cart']) ? $data['cart'] : null);
             $this->set_data_raw(isset($data['data']) ? $data['data'] : null);
+            $this->_total = isset($data['total']) ? abs($data['total']) : null;
             $this->_abandoned = isset($data['abandoned']) ? $data['abandoned'] : null;
             $this->_created = isset($data['created']) ? $data['created'] : current_time('mysql');
             $this->_modified = isset($data['modified']) ? $data['modified'] : current_time('mysql');
@@ -108,6 +110,7 @@ class AutomationWoocommerceCart
         $mysql_data = [
             'data' => $data,
             'cart' => $cart,
+            'total' => $this->_total,
             'abandoned' => $this->_abandoned,
             'modified' => $this->_modified,
         ];
@@ -138,6 +141,7 @@ class AutomationWoocommerceCart
         $prev_is_abandoned = $this->_abandoned;
         if ($is_abandoned) {
             $this->_abandoned = current_time('mysql');
+            $this->_total = $this->get_cart_total();
         } else {
             $this->_abandoned = null;
         }
@@ -286,7 +290,7 @@ class AutomationWoocommerceCart
                 $product = wc_get_product($product_id);
             }
 
-            if (!$product->is_purchasable()) {
+            if ($product && !$product->is_purchasable()) {
                 continue;
             }
 
@@ -294,10 +298,20 @@ class AutomationWoocommerceCart
             $tmp['product_id'] = $product_id;
             $tmp['variation_id'] = $variation_id;
             $tmp['product'] = $product;
+            $tmp['total'] = $item['line_total'] + $item['line_tax'];
             $items[] = $tmp;
         }
 
         return $items;
+    }
+
+    public function get_cart_total()
+    {
+        $items = $this->get_items();
+        return array_reduce($items, function ($carry, $item) {
+            $carry += abs($item['total']);
+            return $carry;
+        }, 0);
     }
 
     public function get_item_ids()

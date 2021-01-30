@@ -3,6 +3,7 @@
 namespace EmailWP\Common\Rest;
 
 use EmailWP\Common\Action\ActionManager;
+use EmailWP\Common\Action\SendEmailTemplate\DefaultSendEmailTemplate;
 use EmailWP\Common\Analytics\AnalyticsManager;
 use EmailWP\Common\Automation\AutomationManager;
 use EmailWP\Common\Event\EventManager;
@@ -543,26 +544,29 @@ class RestManager
 
         $settings = $request->get_param('settings');
 
+        // load template
+        $templates = apply_filters('ewp/send_email/register_template', [
+            'default' => [
+                'label' => 'Default',
+                'class' => DefaultSendEmailTemplate::class
+            ]
+        ]);
+
+        $template_id = $settings['template'];
+        $template_id = !empty($template_id) && isset($templates[$template_id]) ? $template_id : 'default';
+        $template = new $templates[$template_id]['class'];
+
         $subject = $this->placeholder_manager->replace_placeholders($settings['subject'], $event_data);
         $message = nl2br($settings['message']);
         $message = $this->placeholder_manager->replace_placeholders($message, $event_data);
 
-        // load template
-        $templates = apply_filters('ewp/send_email/register_template', []);
-        $template_id = $settings['template'];
-        if (isset($templates[$template_id], $templates[$template_id]['class'])) {
-            $template = new $templates[$template_id]['class'];
-            $template->set_subject($subject);
-            $template->set_message($message);
-            if (!isset($settings['show_unsubscribe']) || $settings['show_unsubscribe'] !== 'no') {
-                $template->add_unsubscribe_url(add_query_arg(['ewp_unsubscribe' => urlencode(base64_encode('preview'))], site_url()));
-            }
-            $message = $template->render();
-        } else {
-            if (!isset($settings['show_unsubscribe']) || $settings['show_unsubscribe'] !== 'no') {
-                $message .= sprintf('<br /><br /><a href="%s">Unsubscribe</a>', add_query_arg(['ewp_unsubscribe' => urlencode(base64_encode('preview'))], site_url()));
-            }
+
+        $template->set_subject($subject);
+        $template->set_message($message);
+        if (!isset($settings['show_unsubscribe']) || $settings['show_unsubscribe'] !== 'no') {
+            $template->add_unsubscribe_url(add_query_arg(['ewp_unsubscribe' => urlencode(base64_encode('preview'))], site_url()));
         }
+        $message = $template->render();
 
         $headers = ["Content-Type: text/html"];
 

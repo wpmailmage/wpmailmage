@@ -8,6 +8,16 @@ class WooCommerceSendEmailTemplate
     protected $_message = '';
     protected $_unsubscribe = null;
 
+    public function __construct()
+    {
+        add_filter('ewp_email_button_args', [$this, 'set_email_button_args']);
+    }
+
+    public function __destruct()
+    {
+        remove_filter('ewp_email_button_args', [$this, 'set_email_button_args']);
+    }
+
     public function set_subject($subject)
     {
         $this->_subject = $subject;
@@ -31,6 +41,15 @@ class WooCommerceSendEmailTemplate
         return $html;
     }
 
+    public function set_email_button_args($args)
+    {
+        if (!isset($args['color'])) {
+            $args['color'] = get_option('woocommerce_email_base_color');
+        }
+
+        return $args;
+    }
+
     public function render()
     {
 
@@ -43,8 +62,8 @@ class WooCommerceSendEmailTemplate
         add_filter('woocommerce_email_footer_text', [$this, 'before_email']);
         $message = WC()->mailer()->wrap_message($this->_subject, $this->_message);
         remove_filter('woocommerce_email_footer_text', [$this, 'before_email']);
-
         $message = apply_filters('woocommerce_mail_content', $email->style_inline($message));
+
         return $message;
     }
 }

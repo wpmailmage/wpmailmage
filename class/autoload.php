@@ -1,5 +1,11 @@
 <?php
 
+// Load composer if it exists
+$composer_path = __DIR__ . '/../vendor/autoload.php';
+if (file_exists($composer_path)) {
+    require_once $composer_path;
+}
+
 spl_autoload_register(function ($class) {
 
     // project-specific namespace prefix

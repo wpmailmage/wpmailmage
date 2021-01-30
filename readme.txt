@@ -3,7 +3,7 @@ Contributors: mailmage
 Tags: automation, automate, abandoned cart, product reviews, woocommerce, email
 Requires at least: 4.0
 Tested up to: 5.6
-Stable tag: 0.0.16
+Stable tag: 0.0.17
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -34,6 +34,12 @@ You are able to create a single automation that takes advantages of all Mail mag
 == Screenshots ==
 
 == Changelog ==
+
+= 0.0.17 =
+
+* Added total column to abandoned carts table, gets calculated when marked as abandoned.
+* Added default email template styling.
+* Added email button, used for {{wc_cart.view_button}}, and {{general.button}}, with parameters (text,url, color)
 
 = 0.0.16 =
 
