@@ -358,7 +358,7 @@ class AnalyticsManager
         $action = $automation_model->get_action();
         $trigger_event = 'email';
 
-        if ($action == 'email') {
+        if ($action == 'send_email' || $action == 'email') {
             switch ($event) {
                 case 'woocommerce.abandoned_cart':
                     list($chart_data, $ticks) = $this->get_chart_data($id, time(), 0, 'day', 'jS M', [$trigger_event, 'recovered::wc_cart']);

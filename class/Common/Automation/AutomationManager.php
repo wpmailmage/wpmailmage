@@ -106,6 +106,11 @@ class AutomationManager
         return $this->action_manager->load_action($action_id, $action_settings);
     }
 
+    /**
+     * Get enabled automations
+     *
+     * @return AutomationModel[]
+     */
     public function get_enabled_automations()
     {
         $automations = $this->get_automations();

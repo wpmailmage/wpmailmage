@@ -34,6 +34,7 @@ class EventManager
         $events = array_merge($events, [
             'post.order_status' => PostStatusChangeEvent::class,
             'user.registered' => UserRegisteredEvent::class,
+            'scheduled' => ScheduledEvent::class
         ]);
 
         if (class_exists('WooCommerce')) {

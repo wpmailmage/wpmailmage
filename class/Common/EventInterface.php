@@ -26,6 +26,13 @@ interface EventInterface
     public function get_placeholders();
 
     /**
+     * Show schedule settings
+     *
+     * @return boolean
+     */
+    public function has_schedule();
+
+    /**
      * Install Event Listener
      *
      * @return void

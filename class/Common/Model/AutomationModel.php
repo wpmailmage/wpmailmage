@@ -344,22 +344,21 @@ class AutomationModel
         ];
     }
 
-    public function get_schedule($current_time)
+    public function calculate_scheduled($current_time = null, $unit, $days, $hours)
     {
-        if ($this->schedule['type'] != 'delay') {
-            return $current_time;
+
+        if (is_null($current_time)) {
+            $current_time = current_time('timestamp');
         }
 
         $schedule_time = -1;
-        $days = !empty($this->schedule['schedule']['day']) ? $this->schedule['schedule']['day'] : [0];
-        $hours = $this->schedule['schedule']['hour'];
         if (empty($hours)) {
             return $current_time;
         }
 
         foreach ($days as $day) {
             foreach ($hours as $hour) {
-                $row_time = $this->calculate_scheduled_time($this->schedule['schedule']['unit'], $day, $hour, $current_time);
+                $row_time = $this->calculate_scheduled_time($unit, $day, $hour, $current_time);
                 if ($schedule_time == -1 || $row_time < $schedule_time) {
                     $schedule_time = $row_time;
                 }
@@ -371,6 +370,41 @@ class AutomationModel
         }
 
         return $schedule_time;
+    }
+
+    public function get_schedule($current_time)
+    {
+        if ($this->schedule['type'] != 'delay') {
+            return $current_time;
+        }
+
+        $days = !empty($this->schedule['schedule']['day']) ? $this->schedule['schedule']['day'] : [0];
+        $hours = $this->schedule['schedule']['hour'];
+        $unit = $this->schedule['schedule']['unit'];
+
+        return $this->calculate_scheduled($current_time, $unit, $days, $hours);
+
+        // $schedule_time = -1;
+        // $days = !empty($this->schedule['schedule']['day']) ? $this->schedule['schedule']['day'] : [0];
+        // $hours = $this->schedule['schedule']['hour'];
+        // if (empty($hours)) {
+        //     return $current_time;
+        // }
+
+        // foreach ($days as $day) {
+        //     foreach ($hours as $hour) {
+        //         $row_time = $this->calculate_scheduled_time($this->schedule['schedule']['unit'], $day, $hour, $current_time);
+        //         if ($schedule_time == -1 || $row_time < $schedule_time) {
+        //             $schedule_time = $row_time;
+        //         }
+        //     }
+        // }
+
+        // if ($schedule_time == -1) {
+        //     return $current_time;
+        // }
+
+        // return $schedule_time;
     }
 
     public function get_delay()

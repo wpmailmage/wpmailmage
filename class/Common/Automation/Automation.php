@@ -117,12 +117,16 @@ class Automation
         return $result;
     }
 
-    public function queue($event_data = [])
+    public function queue($event_data = [], $scheduled_time = null)
     {
         /**
          * @var Properties $properties
          */
         $properties = Container::getInstance()->get('properties');
+
+        if (is_null($scheduled_time)) {
+            $scheduled_time = $this->_model->get_schedule(current_time('timestamp') + $this->_model->get_delay());
+        }
 
         /**
          * @var \WPDB $wpdb
@@ -132,7 +136,7 @@ class Automation
             'automation_id' => $this->get_id(),
             'action_name' => $this->_action->get_id(),
             'action_data' => serialize($event_data),
-            'scheduled' => date('Y-m-d H:i:s', $this->_model->get_schedule(current_time('timestamp') + $this->_model->get_delay())),
+            'scheduled' => date('Y-m-d H:i:s', $scheduled_time),
             'created' => current_time('mysql'),
             'modified' => current_time('mysql')
         ]);

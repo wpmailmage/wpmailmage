@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit8645819bb7e62b1fe08b95d029986840
+class ComposerStaticInit222c2bce9990f64448b39fcd05bd6ae9
 {
     public static $prefixLengthsPsr4 = array (
         'S' => 
@@ -13,7 +13,7 @@ class ComposerStaticInit8645819bb7e62b1fe08b95d029986840
         ),
         'P' => 
         array (
-            'Pelago\\Emogrifier\\' => 18,
+            'Pelago\\' => 7,
         ),
     );
 
@@ -22,7 +22,7 @@ class ComposerStaticInit8645819bb7e62b1fe08b95d029986840
         array (
             0 => __DIR__ . '/..' . '/symfony/css-selector',
         ),
-        'Pelago\\Emogrifier\\' => 
+        'Pelago\\' => 
         array (
             0 => __DIR__ . '/..' . '/pelago/emogrifier/src',
         ),
@@ -30,13 +30,14 @@ class ComposerStaticInit8645819bb7e62b1fe08b95d029986840
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
-        'Pelago\\Emogrifier\\CssInliner' => __DIR__ . '/..' . '/pelago/emogrifier/src/CssInliner.php',
-        'Pelago\\Emogrifier\\HtmlProcessor\\AbstractHtmlProcessor' => __DIR__ . '/..' . '/pelago/emogrifier/src/HtmlProcessor/AbstractHtmlProcessor.php',
-        'Pelago\\Emogrifier\\HtmlProcessor\\CssToAttributeConverter' => __DIR__ . '/..' . '/pelago/emogrifier/src/HtmlProcessor/CssToAttributeConverter.php',
-        'Pelago\\Emogrifier\\HtmlProcessor\\HtmlNormalizer' => __DIR__ . '/..' . '/pelago/emogrifier/src/HtmlProcessor/HtmlNormalizer.php',
-        'Pelago\\Emogrifier\\HtmlProcessor\\HtmlPruner' => __DIR__ . '/..' . '/pelago/emogrifier/src/HtmlProcessor/HtmlPruner.php',
-        'Pelago\\Emogrifier\\Utilities\\ArrayIntersector' => __DIR__ . '/..' . '/pelago/emogrifier/src/Utilities/ArrayIntersector.php',
-        'Pelago\\Emogrifier\\Utilities\\CssConcatenator' => __DIR__ . '/..' . '/pelago/emogrifier/src/Utilities/CssConcatenator.php',
+        'Pelago\\Emogrifier' => __DIR__ . '/..' . '/pelago/emogrifier/src/Emogrifier.php',
+        'Pelago\\Emogrifier\\CssInliner' => __DIR__ . '/..' . '/pelago/emogrifier/src/Emogrifier/CssInliner.php',
+        'Pelago\\Emogrifier\\HtmlProcessor\\AbstractHtmlProcessor' => __DIR__ . '/..' . '/pelago/emogrifier/src/Emogrifier/HtmlProcessor/AbstractHtmlProcessor.php',
+        'Pelago\\Emogrifier\\HtmlProcessor\\CssToAttributeConverter' => __DIR__ . '/..' . '/pelago/emogrifier/src/Emogrifier/HtmlProcessor/CssToAttributeConverter.php',
+        'Pelago\\Emogrifier\\HtmlProcessor\\HtmlNormalizer' => __DIR__ . '/..' . '/pelago/emogrifier/src/Emogrifier/HtmlProcessor/HtmlNormalizer.php',
+        'Pelago\\Emogrifier\\HtmlProcessor\\HtmlPruner' => __DIR__ . '/..' . '/pelago/emogrifier/src/Emogrifier/HtmlProcessor/HtmlPruner.php',
+        'Pelago\\Emogrifier\\Utilities\\ArrayIntersector' => __DIR__ . '/..' . '/pelago/emogrifier/src/Emogrifier/Utilities/ArrayIntersector.php',
+        'Pelago\\Emogrifier\\Utilities\\CssConcatenator' => __DIR__ . '/..' . '/pelago/emogrifier/src/Emogrifier/Utilities/CssConcatenator.php',
         'Symfony\\Component\\CssSelector\\CssSelectorConverter' => __DIR__ . '/..' . '/symfony/css-selector/CssSelectorConverter.php',
         'Symfony\\Component\\CssSelector\\Exception\\ExceptionInterface' => __DIR__ . '/..' . '/symfony/css-selector/Exception/ExceptionInterface.php',
         'Symfony\\Component\\CssSelector\\Exception\\ExpressionErrorException' => __DIR__ . '/..' . '/symfony/css-selector/Exception/ExpressionErrorException.php',
@@ -90,9 +91,9 @@ class ComposerStaticInit8645819bb7e62b1fe08b95d029986840
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit8645819bb7e62b1fe08b95d029986840::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit8645819bb7e62b1fe08b95d029986840::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit8645819bb7e62b1fe08b95d029986840::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit222c2bce9990f64448b39fcd05bd6ae9::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit222c2bce9990f64448b39fcd05bd6ae9::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit222c2bce9990f64448b39fcd05bd6ae9::$classMap;
 
         }, null, ClassLoader::class);
     }

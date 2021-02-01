@@ -246,7 +246,8 @@ class RestManager
                 'id' => $event_id,
                 'label' => $event->get_label(),
                 'fields' => $event->get_fields(),
-                'placeholders' => $event->get_placeholders()
+                'placeholders' => $event->get_placeholders(),
+                'schedule' => $event->has_schedule() ? 'yes' : 'no',
             ];
         }
 

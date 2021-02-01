@@ -1,6 +1,6 @@
 # Emogrifier
 
-[![Build Status](https://github.com/MyIntervals/emogrifier/workflows/CI/badge.svg?branch=master)](https://github.com/MyIntervals/emogrifier/actions/)
+[![Build Status](https://travis-ci.org/MyIntervals/emogrifier.svg?branch=master)](https://travis-ci.org/MyIntervals/emogrifier)
 [![Latest Stable Version](https://poser.pugx.org/pelago/emogrifier/v/stable.svg)](https://packagist.org/packages/pelago/emogrifier)
 [![Total Downloads](https://poser.pugx.org/pelago/emogrifier/downloads.svg)](https://packagist.org/packages/pelago/emogrifier)
 [![Latest Unstable Version](https://poser.pugx.org/pelago/emogrifier/v/unstable.svg)](https://packagist.org/packages/pelago/emogrifier)
@@ -210,7 +210,8 @@ method, if invoked after `removeElementsWithDisplayNone`, will remove the
 ### Options
 
 There are several options that you can set on the `CssInliner` instance before
-calling the `inlineCss` method:
+calling the `inlineCss` method (or on the `Emogrifier` instance before calling
+the `emogrify` method):
 
 * `->disableStyleBlocksParsing()` - By default, `CssInliner` will grab
   all `<style>` blocks in the HTML and will apply the CSS styles as inline
@@ -220,7 +221,7 @@ calling the `inlineCss` method:
   use this option. If you use this option, the contents of the `<style>` blocks
   will _not_ be applied as inline styles and any CSS you want `CssInliner` to
   use must be passed in as described in the [Usage section](#usage) above.
-* `->disableInlineStyleAttributesParsing()` - By default, `CssInliner`
+* `->disableInlineStylesParsing()` - By default, `CssInliner`
   preserves all of the "style" attributes on tags in the HTML you pass to it.
   However if you want to discard all existing inline styles in the HTML before
   the CSS is applied, you should use this option.
@@ -240,7 +241,53 @@ calling the `inlineCss` method:
   $cssInliner->addExcludedSelector('.message-preview *');
   ```
 
-### Migrating from the dropped `Emogrifier` class to the `CssInliner` class
+### Using the legacy Emogrifier class
+
+In version 3.0.0, the `Emogrifier` class has been deprecated, and it will be
+removed for version 4.0.0. Please update your code to use the new
+`CssInliner` class instead.
+
+If you are still using the deprecated class, here is how to use it:
+
+First, you provide Emogrifier with the HTML and CSS you would like to merge.
+This can happen directly during instantiation:
+
+```php
+$html = '<html><h1>Hello world!</h1></html>';
+$css = 'h1 {font-size: 32px;}';
+$emogrifier = new \Pelago\Emogrifier($html, $css);
+```
+
+You could also use the setters for providing this data after instantiation:
+
+```php
+$emogrifier = new \Pelago\Emogrifier();
+
+$html = '<html><h1>Hello world!</h1></html>';
+$css = 'h1 {font-size: 32px;}';
+
+$emogrifier->setHtml($html);
+$emogrifier->setCss($css);
+```
+
+After you have set the HTML and CSS, you can call the `emogrify` method to
+merge both:
+
+```php
+$mergedHtml = $emogrifier->emogrify();
+```
+
+Emogrifier automatically adds a Content-Type meta tag to set the charset for
+the document (if it is not provided).
+
+If you would like to get back only the content of the BODY element instead of
+the complete HTML document, you can use the `emogrifyBodyContent` instead:
+
+```php
+$bodyContent = $emogrifier->emogrifyBodyContent();
+```
+
+### Migrating from `Emogrifier` to `CssInliner`
 
 #### Minimal example
 
@@ -277,7 +324,7 @@ New code using `CssInliner` and family:
 ```php
 $domDocument = CssInliner::fromHtml($html)->inlineCss($css)->getDomDocument();
 
-HtmlPruner::fromDomDocument($domDocument)->removeElementsWithDisplayNone();
+HtmlPruner::fromDomDocument($domDocument)->removeElementsWithDisplayNone(),
 $html = CssToAttributeConverter::fromDomDocument($domDocument)
   ->convertCssToVisualAttributes()->render();
 ```
@@ -291,6 +338,7 @@ Emogrifier currently supports the following
  * [class](https://developer.mozilla.org/en-US/docs/Web/CSS/Class_selectors)
  * [ID](https://developer.mozilla.org/en-US/docs/Web/CSS/ID_selectors)
  * [universal](https://developer.mozilla.org/en-US/docs/Web/CSS/Universal_selectors)
+   (partial support)
  * [attribute](https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors):
     * presence
     * exact value match
@@ -307,7 +355,8 @@ Emogrifier currently supports the following
    * [empty](https://developer.mozilla.org/en-US/docs/Web/CSS/:empty)
    * [first-child](https://developer.mozilla.org/en-US/docs/Web/CSS/:first-child)
    * [first-of-type](https://developer.mozilla.org/en-US/docs/Web/CSS/:first-of-type)
-     (with a type, e.g. `p:first-of-type` but not `*:first-of-type`)
+     (with a type, e.g. `p:first-of-type` but not `*:first-of-type` which will
+     behave as `*:first-child`)
    * [last-child](https://developer.mozilla.org/en-US/docs/Web/CSS/:last-child)
    * [last-of-type](https://developer.mozilla.org/en-US/docs/Web/CSS/:last-of-type)
      (with a type)
@@ -319,29 +368,32 @@ Emogrifier currently supports the following
    * [nth-of-type()](https://developer.mozilla.org/en-US/docs/Web/CSS/:nth-of-type)
      (with a type)
    * [only-child](https://developer.mozilla.org/en-US/docs/Web/CSS/:only-child)
-   * [only-of-type](https://developer.mozilla.org/en-US/docs/Web/CSS/:only-of-type)
-     (with a type)
 
 The following selectors are not implemented yet:
 
+ * [universal](https://developer.mozilla.org/en-US/docs/Web/CSS/Universal_selectors):
+   * with
+     [child combinator](https://developer.mozilla.org/en-US/docs/Web/CSS/Child_combinator)
+   * as ancestor with 
+     [descendant combinator](https://developer.mozilla.org/en-US/docs/Web/CSS/Descendant_combinator)
+     (e.g. `p *` is supported but `* p` is not)
  * [case-insensitive attribute value](https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors#case-insensitive)
- * static [pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)
-   not listed above as supported – rules involving them will nonetheless be
-   preserved and copied to a `<style>` element in the HTML – including (but not
-   necessarily limited to) the following:
-   * [any-link](https://developer.mozilla.org/en-US/docs/Web/CSS/:any-link)
+ * static [pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes):
    * [first-of-type](https://developer.mozilla.org/en-US/docs/Web/CSS/:first-of-type)
-     without a type
+     without a type (will behave as `:first-child`)
    * [last-of-type](https://developer.mozilla.org/en-US/docs/Web/CSS/:last-of-type)
-     without a type
+     without a type (will behave as `:last-child`)
    * [nth-last-of-type()](https://developer.mozilla.org/en-US/docs/Web/CSS/:nth-last-of-type)
-     without a type
+     without a type (will behave as `:nth-last-child()`)
    * [nth-of-type()](https://developer.mozilla.org/en-US/docs/Web/CSS/:nth-of-type)
-     without a type
-   * [only-of-type()](https://developer.mozilla.org/en-US/docs/Web/CSS/:only-of-type)
-     without a type
-   * [optional](https://developer.mozilla.org/en-US/docs/Web/CSS/:optional)
-   * [required](https://developer.mozilla.org/en-US/docs/Web/CSS/:required)
+     without a type (will behave as `:nth-child()`)
+   * any pseudo-classes not listed above as supported – rules involving them
+     will nonetheless be preserved and copied to a `<style>` element in the 
+     HTML – including (but not necessarily limited to) the following:
+     * [any-link](https://developer.mozilla.org/en-US/docs/Web/CSS/:any-link)
+     * [only-of-type](https://developer.mozilla.org/en-US/docs/Web/CSS/:only-of-type)
+     * [optional](https://developer.mozilla.org/en-US/docs/Web/CSS/:optional)
+     * [required](https://developer.mozilla.org/en-US/docs/Web/CSS/:required)
      
 Rules involving the following selectors cannot be applied as inline styles.
 They will, however, be preserved and copied to a `<style>` element in the HTML:
@@ -405,13 +457,13 @@ They will, however, be preserved and copied to a `<style>` element in the HTML:
 
 ## Steps to release a new version
 
+1. Create a pull request "Prepare release of version x.y.z" with the following
+   changes.
 1. In the [composer.json](composer.json), update the `branch-alias` entry to
    point to the release _after_ the upcoming release.
 1. In the [CHANGELOG.md](CHANGELOG.md), create a new section with subheadings
    for changes _after_ the upcoming release, set the version number for the
    upcoming release, and remove any empty sections.
-1. Create a pull request "Prepare release of version x.y.z" with those
-   changes.
 1. Have the pull request reviewed and merged.
 1. Tag the new release.
 1. In the [Releases tab](https://github.com/MyIntervals/emogrifier/releases),

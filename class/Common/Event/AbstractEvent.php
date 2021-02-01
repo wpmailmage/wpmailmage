@@ -53,4 +53,14 @@ abstract class AbstractEvent
     {
         return $this->_log_message;
     }
+
+    /**
+     * Show schedule settings
+     *
+     * @return boolean
+     */
+    public function has_schedule()
+    {
+        return true;
+    }
 }
