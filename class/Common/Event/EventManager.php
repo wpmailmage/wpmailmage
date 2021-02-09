@@ -44,6 +44,12 @@ class EventManager
             ]);
         }
 
+        if (class_exists('WC_Subscription')) {
+            $events = array_merge($events, [
+                'woocommerce_subscription.order_status' => WooCommerceSubscriptionOrderStatusEvent::class,
+            ]);
+        }
+
         return $events;
     }
 

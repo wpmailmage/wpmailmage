@@ -3,18 +3,18 @@ Contributors: mailmage
 Tags: automation, automate, abandoned cart, product reviews, woocommerce, email
 Requires at least: 4.0
 Tested up to: 5.6
-Stable tag: 0.0.18
+Stable tag: 0.0.19
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Mail Mage allows you to automate your WordPress marketing workflows to help convert, retain and recover customers in WordPress and WooCommerce, other popular plugins coming soon.
+Recover Abandoned WooCommerce cart emails, send WooCommerce Product reminder emails, Automate your WordPress marketing workflows to help convert, retain and recover customers in WordPress and WooCommerce, other popular plugins coming soon.
 
 == Description ==
 
 Easily create marketing automations such as recovering abandoned WooCommerce carts, Send out WooCommerce review reminder emails and many other types of WooCommerce follow up emails can be created with ease. 
 
-Creating an automation simply by choosing and configuring when to trigger, how long to wait before sending, and customising what email is sent using template variables to inject data captured from the event. 
+Creating automations simply by choosing and configuring when to trigger, how long to wait before sending, and customising what email is sent using template variables to inject data captured from the event. 
 
 
 == Installation ==
@@ -27,13 +27,14 @@ For further documentation on installing and using Mail Mage can be found [here](
 
 == Frequently Asked Questions ==
 
-= How many automations can i create? =
-
-You are able to create a single automation that takes advantages of all Mail mage built in events and actions. 
-
 == Screenshots ==
 
 == Changelog ==
+
+= 0.0.19 =
+
+* Added new event to check subscription status changes.
+* Added ability to add multiple automations. 
 
 = 0.0.18 =
 
