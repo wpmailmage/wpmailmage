@@ -25,24 +25,24 @@ class InstalledVersions
 private static $installed = array (
   'root' => 
   array (
-    'pretty_version' => '0.0.19',
-    'version' => '0.0.19.0',
+    'pretty_version' => '0.0.20',
+    'version' => '0.0.20.0',
     'aliases' => 
     array (
     ),
-    'reference' => '15b7b321162fff9c6a8150a8066483e957a30fbb',
+    'reference' => 'b3b5f3c77c43999a1440e460d952004460ed64e2',
     'name' => '__root__',
   ),
   'versions' => 
   array (
     '__root__' => 
     array (
-      'pretty_version' => '0.0.19',
-      'version' => '0.0.19.0',
+      'pretty_version' => '0.0.20',
+      'version' => '0.0.20.0',
       'aliases' => 
       array (
       ),
-      'reference' => '15b7b321162fff9c6a8150a8066483e957a30fbb',
+      'reference' => 'b3b5f3c77c43999a1440e460d952004460ed64e2',
     ),
     'pelago/emogrifier' => 
     array (

@@ -3,7 +3,7 @@ Contributors: mailmage
 Tags: automation, automate, abandoned cart, product reviews, woocommerce, email
 Requires at least: 4.0
 Tested up to: 5.6
-Stable tag: 0.0.19
+Stable tag: 0.0.20
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -30,6 +30,10 @@ For further documentation on installing and using Mail Mage can be found [here](
 == Screenshots ==
 
 == Changelog ==
+
+= 0.0.20 = 
+
+* Fixed issue with only one automation showing.
 
 = 0.0.19 =
 

@@ -1,1 +1,1 @@
-<div id="emailwp-root" test="1"></div>
+<div id="emailwp-root"></div>

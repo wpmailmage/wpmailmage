@@ -79,6 +79,9 @@ class ServiceProvider
         $this->action_manager = new ActionManager($event_handler, $this->placeholder_manager);
         $this->analytics_manager = new AnalyticsManager($event_handler);
         $this->view_manager = new ViewManager($this->properties);
+        $this->automation_manager = new AutomationManager($event_handler, $this->event_manager, $this->action_manager);
+        $this->cron_manager = new CronManager($this->automation_manager, $this->properties);
+        $this->rest_manager = new RestManager($this->http, $this->event_manager, $this->action_manager, $this->automation_manager, $this->properties, $this->analytics_manager, $this->placeholder_manager);
 
         add_filter('ewp/send_email/register_template', function ($templates) {
             if (class_exists('WooCommerce')) {

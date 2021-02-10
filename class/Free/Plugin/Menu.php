@@ -22,7 +22,6 @@ class Menu extends \EmailWP\Common\Plugin\Menu
             'ajax_base' => rest_url('/' . $this->properties->rest_namespace . '/' . $this->properties->rest_version),
             'plugin_url' => plugin_dir_url($this->properties->plugin_file_path),
             'version' => $this->properties->plugin_version,
-            'automation_id' => intval($this->get_automation_id())
         ];
 
         wp_localize_script($this->properties->plugin_domain . '-bundle', 'wpApiSettings', $settings);
@@ -31,21 +30,5 @@ class Menu extends \EmailWP\Common\Plugin\Menu
         wp_add_inline_script($this->properties->plugin_domain . '-bundle', '', 'before');
 
         wp_enqueue_style($this->properties->plugin_domain . '-bundle-styles', plugin_dir_url($this->properties->plugin_file_path) . 'dist/css/core.bundle.css', array(), $this->properties->plugin_version, 'all');
-    }
-
-    public function get_automation_id()
-    {
-        /**
-         * @var AutomationManager $automation_manager
-         */
-        $automation_manager = Container::getInstance()->get('automation_manager');
-
-        $automations = $automation_manager->get_automations();
-        if (!empty($automations)) {
-            $automation = $automations[0];
-            return $automation->get_id();
-        }
-
-        return false;
     }
 }
