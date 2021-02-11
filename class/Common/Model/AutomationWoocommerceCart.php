@@ -254,17 +254,17 @@ class AutomationWoocommerceCart
             $userdata = get_userdata(intval($this->_user_id));
             return $userdata->user_email;
         }
-        return $this->_data['billing_email'];
+        return isset($this->_data['billing_email']) ? $this->_data['billing_email'] : null;
     }
 
     public function get_billing_first_name()
     {
-        return $this->_data['billing_first_name'];
+        return isset($this->_data['billing_first_name']) ? $this->_data['billing_first_name'] : null;
     }
 
     public function get_billing_last_name()
     {
-        return $this->_data['billing_last_name'];
+        return isset($this->_data['billing_last_name']) ? $this->_data['billing_last_name'] : null;
     }
 
     public function get_formatted_billing_full_name()

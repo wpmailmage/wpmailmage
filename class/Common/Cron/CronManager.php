@@ -98,6 +98,7 @@ class CronManager
         do {
             $row_start = time();
 
+            $limit_where = '';
             $email_sent_check = intval($wpdb->get_var("SELECT COUNT(*) FROM {$this->properties->table_automation_queue_activity} WHERE `type` = 'email' AND `created` >= '" . date('Y-m-d H:i:s', $check_time) . "'"));
             if ($max_emails_per_hour > 0 && $email_sent_check >= $max_emails_per_hour) {
                 $limit_where = " AND action_name != 'send_email' ";

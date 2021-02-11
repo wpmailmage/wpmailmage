@@ -288,8 +288,9 @@ class AnalyticsManager
                 // length + 1 is even
                 $ticks = [
                     date($date_unit, $tmp_end_time - $offset_unit * 0),
-                    date($date_unit, $tmp_end_time - $offset_unit * floor(absint($length) * 0.3)),
-                    date($date_unit, $tmp_end_time - $offset_unit * ceil(absint($length) * 0.6)),
+                    date($date_unit, $tmp_end_time - $offset_unit * floor(absint($length) * 0.25)),
+                    date($date_unit, $tmp_end_time - $offset_unit * ceil(absint($length) * 0.5)),
+                    date($date_unit, $tmp_end_time - $offset_unit * ceil(absint($length) * 0.75)),
                     date($date_unit, $tmp_end_time - $offset_unit * absint($length)),
                 ];
             }
@@ -372,12 +373,15 @@ class AnalyticsManager
                     break;
                 case 'woocommerce.order_status':
                     // TODO: Check if the action contains review items 
-                    list($chart_data, $ticks, $totals) = $this->get_chart_data($id, time(), 0, 'day', 'jS M', [$trigger_event, 'read', 'wc_review']);
+                    list($chart_data, $ticks, $totals) = $this->get_chart_data($id, time(), 0, 'day', 'jS M', [$trigger_event, 'read', 'click', 'wc_review']);
 
                     $legends = ['Emails sent - ' . $totals[0], 'Emails read - ' . $totals[1]];
                     $title = 'Reports';
                     if ($totals[2] > 0) {
-                        $legends[] = 'Products Reviewed - ' . $totals[2];
+                        $legends[] = 'Emails clicked - ' . $totals[2];
+                    }
+                    if ($totals[3] > 0) {
+                        $legends[] = 'Products Reviewed - ' . $totals[3];
                         $title = 'Products Reviewed';
                     }
 

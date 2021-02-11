@@ -57,4 +57,9 @@ abstract class AbstractPlaceholder
     {
         $this->_cleanup[] = $method;
     }
+
+    public function get_items()
+    {
+        return [];
+    }
 }

@@ -35,6 +35,15 @@ class PostPlaceholder extends AbstractPlaceholder implements PlaceholderInterfac
         return get_post($data);
     }
 
+    public function get_items()
+    {
+        $query = new \WP_Query(['post_type' => 'post', 'posts_per_page' => 200]);
+        return array_reduce($query->posts, function ($carry, $item) {
+            $carry[] = ['value' => $item->ID, 'label' => 'Post: ' . $item->post_title];
+            return $carry;
+        }, []);
+    }
+
     /**
      * @param array $data
      * @return integer

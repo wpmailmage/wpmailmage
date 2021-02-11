@@ -42,6 +42,20 @@ class WooCommerceAbandonedCartPlaceholder extends AbstractWooCommercePlaceholder
         return new AutomationWoocommerceCart($data);
     }
 
+    public function get_items()
+    {
+        /**
+         * @var \WPDB $wpdb
+         */
+        global $wpdb;
+
+        $carts = $wpdb->get_results("SELECT id, `session_id` FROM `{$this->properties->table_automation_woocommerce_carts}` LIMIT 200", ARRAY_A);
+        return array_reduce($carts, function ($carry, $item) {
+            $carry[] = ['value' => $item['session_id'], 'label' => 'Abandoned Cart #' . $item['id']];
+            return $carry;
+        }, []);
+    }
+
     public function replace_view_link($data, $args = [])
     {
         /**

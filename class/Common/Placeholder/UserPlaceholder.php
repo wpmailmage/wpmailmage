@@ -35,6 +35,16 @@ class UserPlaceholder extends AbstractPlaceholder implements PlaceholderInterfac
         return get_user_by('id', $data);
     }
 
+    public function get_items()
+    {
+        $user_query = new \WP_User_Query(['fields' => 'all', 'number' => 200]);
+        $users = $user_query->get_results();
+        return array_reduce($users, function ($carry, $item) {
+            $carry[] = ['value' => $item->id, 'label' => 'User: ' . $item->display_name];
+            return $carry;
+        }, []);
+    }
+
     /**
      * @param array $data
      * @return integer

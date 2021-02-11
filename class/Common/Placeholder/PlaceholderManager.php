@@ -2,6 +2,8 @@
 
 namespace EmailWP\Common\Placeholder;
 
+use EmailWP\Common\PlaceholderInterface;
+
 class PlaceholderManager
 {
     /**
@@ -16,6 +18,9 @@ class PlaceholderManager
         $this->event_handler = $event_handler;
     }
 
+    /**
+     * @return PlaceholderInterface[]
+     */
     public function get_placeholders()
     {
 
@@ -39,6 +44,12 @@ class PlaceholderManager
             ]);
         }
 
+        if (class_exists('WC_Subscription')) {
+            $placeholders = array_merge($placeholders, [
+                WooCommerceSubscriptionPlaceholder::class
+            ]);
+        }
+
         foreach ($placeholders as $class) {
             $placeholder = new $class;
             $this->_placeholders[$placeholder->get_id()] = $placeholder;
@@ -52,7 +63,7 @@ class PlaceholderManager
         $placeholders = $this->get_placeholders();
 
         if (!isset($placeholders[$id])) {
-            return new \WP_Error('EWP_AM_1', 'Unable to locate event: ' . $id);
+            return new \WP_Error('EWP_AM_1', 'Unable to locate placeholder: ' . $id);
         }
 
         return $placeholders[$id];

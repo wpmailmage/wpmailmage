@@ -9,4 +9,5 @@ interface PlaceholderInterface
     public function save_data($data);
     public function load_data($data);
     public function replace($key, $data);
+    public function get_items();
 }

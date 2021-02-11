@@ -76,7 +76,7 @@ class WooCommerceSubscriptionOrderStatusEvent extends AbstractEvent implements E
                 continue;
             }
 
-            $this->triggered(['wc_order' => $subscription->get_id()]);
+            $this->triggered(['wc_order' => $subscription->get_parent_id(), 'wc_subscription' => $subscription->get_id()]);
             return true;
         }
 
@@ -85,7 +85,7 @@ class WooCommerceSubscriptionOrderStatusEvent extends AbstractEvent implements E
 
     public function get_placeholders()
     {
-        return ['wc_order', 'general'];
+        return ['wc_order', 'wc_subscription', 'general'];
     }
 
     /**

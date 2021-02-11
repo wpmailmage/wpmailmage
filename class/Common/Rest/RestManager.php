@@ -482,46 +482,10 @@ class RestManager
         $result = [];
 
         foreach ($placeholders as $placeholder) {
-            $data = [];
-            switch ($placeholder) {
-                case 'user':
-                    $user_query = new \WP_User_Query(['fields' => 'all', 'number' => 200]);
-                    $users = $user_query->get_results();
-                    $data = array_reduce($users, function ($carry, $item) {
-                        $carry[] = ['value' => $item->id, 'label' => 'User: ' . $item->display_name];
-                        return $carry;
-                    }, []);
-                    break;
-                case 'post':
-                    $query = new \WP_Query(['post_type' => 'post', 'posts_per_page' => 200]);
-                    $data = array_reduce($query->posts, function ($carry, $item) {
-                        $carry[] = ['value' => $item->ID, 'label' => 'Post: ' . $item->post_title];
-                        return $carry;
-                    }, []);
-                    break;
-                case 'wc_cart':
 
-                    /**
-                     * @var \WPDB $wpdb
-                     */
-                    global $wpdb;
-
-                    $carts = $wpdb->get_results("SELECT id, `session_id` FROM `{$this->properties->table_automation_woocommerce_carts}` LIMIT 200", ARRAY_A);
-                    $data = array_reduce($carts, function ($carry, $item) {
-                        $carry[] = ['value' => $item['session_id'], 'label' => 'Abandoned Cart #' . $item['id']];
-                        return $carry;
-                    }, []);
-                    break;
-                case 'wc_order':
-                    $orders = wc_get_orders(['numberposts' => 200]);
-                    // $query = new \WP_Query(['post_type' => 'shop_order', 'posts_per_page' => 200]);
-                    $data = array_reduce($orders, function ($carry, $item) {
-                        $carry[] = ['value' => $item->id, 'label' => 'Order #' . $item->id];
-                        return $carry;
-                    }, []);
-                    break;
-            }
-            $result[$placeholder] = $data;
+            // TODO: Move this into placeholder manager
+            $placeholder_class = $this->placeholder_manager->get_placeholder($placeholder);
+            $result[$placeholder] = $placeholder_class->get_items();
         }
 
         return $this->http->end_rest_success($result);
@@ -534,6 +498,8 @@ class RestManager
 
     public function preview(\WP_REST_Request $request)
     {
+        $this->placeholder_manager->reset();
+
         $to = $request->get_param('email');
 
         if (!is_email($to)) {
@@ -568,6 +534,8 @@ class RestManager
             $template->add_unsubscribe_url(add_query_arg(['ewp_unsubscribe' => urlencode(base64_encode('preview'))], site_url()));
         }
         $message = $template->render();
+
+        $this->placeholder_manager->cancel();
 
         $headers = ["Content-Type: text/html"];
 

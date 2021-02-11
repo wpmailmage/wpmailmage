@@ -1,10 +1,10 @@
-# Mail Mage - WordPress and WooCommerce Email Marketing Automation, Abandoned Cart Emails & Analytics
+# Mail Mage
 
 **Contributors:** mailmage \
 **Tags:** automation, automate, abandoned cart, product reviews, woocommerce, email \
 **Requires at least:** 4.0 \
 **Tested up to:** 5.6 \
-**Stable tag:** 0.0.20 \
+**Stable tag:** 0.0.21 \
 **Requires PHP:** 5.6 \
 **License:** GPLv2 or later \
 **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
@@ -16,6 +16,21 @@ Recover Abandoned WooCommerce cart emails, send WooCommerce Product reminder ema
 Easily create marketing automations such as recovering abandoned WooCommerce carts, Send out WooCommerce review reminder emails and many other types of WooCommerce follow up emails can be created with ease. 
 
 Creating automations simply by choosing and configuring when to trigger, how long to wait before sending, and customising what email is sent using template variables to inject data captured from the event. 
+
+Examples:
+
+* WooCommerce abandoned cart recovery emails
+* WooCommerce product reminder emails
+
+### WooCommerce abandoned cart recovery emails
+
+Create and send targeted emails to customers who have left without completing their purchases, once their cart has been declared as abandoned (cart is left dormant for 1 hour and email address has been captured). 
+
+Studies carried out in 2020 on average show that the rate of cart abandonment online ranges between 55-80%, with abandoned cart recovery emails some reports suggest on average a 15% recovery rate.
+
+### WooCommerce product reminder emails
+
+Increase the amount of WooCommerce product reviews, by automatically generating targeted customer emails listing purchased products each with a review link, scheduling the sending of emails after an order has been marked as complete.
 
 ## Installation
 
@@ -34,6 +49,11 @@ For further documentation on installing and using Mail Mage can be found [here](
 
 
 ## Changelog
+
+### 0.0.21
+
+* Fixed email reports to display click interactions
+* Fixed preview email to initiate placeholder cleanup
 
 ### 0.0.20
 

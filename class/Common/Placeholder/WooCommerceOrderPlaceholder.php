@@ -37,6 +37,16 @@ class WooCommerceOrderPlaceholder extends AbstractWooCommercePlaceholder impleme
         return wc_get_order($data);
     }
 
+    public function get_items()
+    {
+        $orders = wc_get_orders(['numberposts' => 200]);
+        // $query = new \WP_Query(['post_type' => 'shop_order', 'posts_per_page' => 200]);
+        return array_reduce($orders, function ($carry, $item) {
+            $carry[] = ['value' => $item->id, 'label' => 'Order #' . $item->id];
+            return $carry;
+        }, []);
+    }
+
     /**
      * @param array $data
      * @return integer
