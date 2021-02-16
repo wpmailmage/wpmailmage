@@ -1,24 +1,24 @@
 <?php return array (
   'root' => 
   array (
-    'pretty_version' => '0.0.21',
-    'version' => '0.0.21.0',
+    'pretty_version' => '0.0.22',
+    'version' => '0.0.22.0',
     'aliases' => 
     array (
     ),
-    'reference' => '1974b2a6718226a9f219d3637c5bf93fbefd9892',
+    'reference' => '8e29e2f9716468d7e6dfc04f6a114f144b831f36',
     'name' => '__root__',
   ),
   'versions' => 
   array (
     '__root__' => 
     array (
-      'pretty_version' => '0.0.21',
-      'version' => '0.0.21.0',
+      'pretty_version' => '0.0.22',
+      'version' => '0.0.22.0',
       'aliases' => 
       array (
       ),
-      'reference' => '1974b2a6718226a9f219d3637c5bf93fbefd9892',
+      'reference' => '8e29e2f9716468d7e6dfc04f6a114f144b831f36',
     ),
     'pelago/emogrifier' => 
     array (

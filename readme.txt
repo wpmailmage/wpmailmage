@@ -3,7 +3,7 @@ Contributors: mailmage
 Tags: cart abandonment, cart recovery, product reviews, customer reviews, review reminder, woocommerce, email
 Requires at least: 4.0
 Tested up to: 5.6
-Stable tag: 0.0.21
+Stable tag: 0.0.22
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -16,20 +16,35 @@ Easily create marketing automations such as recovering abandoned WooCommerce car
 
 Creating automations simply by choosing and configuring when to trigger, how long to wait before sending, and customising what email is sent using template variables to inject data captured from the event. 
 
-Examples:
+= Features =
 
-* WooCommerce abandoned cart recovery emails
-* WooCommerce product reminder emails
+* Send emails when post, page or custom post type statuses change.
+* Send emails when on user registration.
+* Send emails on a Monthly, Weekly or Daily schedule.
+* Send emails when a WooCommerce order status is changed.
+* Send emails when a WooCommerce cart is declared abandoned.
+* Send emails when a WooCommerce subscription status changes.
+* Send email immediatly when an event is triggered, delay sending of emails by a minimum amount of time, or send emails on a monthly, weekly, or daily schedule. 
+* Create emails using WordPress, WooCommerce or custom email templates.
+* Allow users to unsubscribe from future emails.
+* Create email messages using text variables, [View a full list of available text variables](https://www.wpmailmage.com/docs/automations/variables/)
+* Send preview emails.
 
-= WooCommerce abandoned cart recovery emails =
+= Examples =
+
+**WooCommerce abandoned cart recovery emails**
 
 Create and send targeted emails to customers who have left without completing their purchases, once their cart has been declared as abandoned (cart is left dormant for 1 hour and email address has been captured). 
 
 Studies carried out in 2020 on average show that the rate of cart abandonment online ranges between 55-80%, with abandoned cart recovery emails some reports suggest on average a 15% recovery rate.
 
-= WooCommerce product reminder emails =
+[View abandoned cart recovery email example](https://www.wpmailmage.com/docs/examples/woocommerce-abandoned-cart-email/)
+
+**WooCommerce product reminder emails**
 
 Increase the amount of WooCommerce product reviews, by automatically generating targeted customer emails listing purchased products each with a review link, scheduling the sending of emails after an order has been marked as complete.
+
+[View review reminder email example](https://www.wpmailmage.com/docs/examples/woocommerce-review-reminder-email/)
 
 == Installation ==
 
@@ -42,6 +57,11 @@ For further documentation on installing and using Mail Mage can be found [here](
 == Frequently Asked Questions ==
 
 == Screenshots ==
+
+1. WooCommerce Product Review Reminder automation
+2. WooCommerce Product Review Reminder email
+3. WooCommerce abandoned cart recovery automation
+4. WooCommerce abandoned cart recovery email
 
 == Changelog ==
 
