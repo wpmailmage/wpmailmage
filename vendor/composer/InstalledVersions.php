@@ -25,24 +25,24 @@ class InstalledVersions
 private static $installed = array (
   'root' => 
   array (
-    'pretty_version' => '0.0.22',
-    'version' => '0.0.22.0',
+    'pretty_version' => '0.0.23',
+    'version' => '0.0.23.0',
     'aliases' => 
     array (
     ),
-    'reference' => '8e29e2f9716468d7e6dfc04f6a114f144b831f36',
+    'reference' => '728360d2eab8c0a3fe773d66b78f7c206208cf2e',
     'name' => '__root__',
   ),
   'versions' => 
   array (
     '__root__' => 
     array (
-      'pretty_version' => '0.0.22',
-      'version' => '0.0.22.0',
+      'pretty_version' => '0.0.23',
+      'version' => '0.0.23.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8e29e2f9716468d7e6dfc04f6a114f144b831f36',
+      'reference' => '728360d2eab8c0a3fe773d66b78f7c206208cf2e',
     ),
     'pelago/emogrifier' => 
     array (
@@ -285,7 +285,6 @@ self::$canGetVendors = method_exists('Composer\Autoload\ClassLoader', 'getRegist
 $installed = array();
 
 if (self::$canGetVendors) {
-
 foreach (ClassLoader::getRegisteredLoaders() as $vendorDir => $loader) {
 if (isset(self::$installedByVendor[$vendorDir])) {
 $installed[] = self::$installedByVendor[$vendorDir];

@@ -75,6 +75,7 @@ class WooCommerceOrderPlaceholder extends AbstractWooCommercePlaceholder impleme
         $order = $data[$this->get_id()];
         $template = isset($args['template']) ? $args['template'] : 'items';
         $review_url = isset($args['review_url']) ? $args['review_url'] : '';
+        $text = isset($args['text']) ? $args['text'] : 'Leave Review';
 
         $text_align  = is_rtl() ? 'right' : 'left';
         $image_size = array(32, 32);
@@ -127,7 +128,7 @@ class WooCommerceOrderPlaceholder extends AbstractWooCommercePlaceholder impleme
                             </td>
                             <td class="td" style="text-align:<?php echo esc_attr($text_align); ?>; vertical-align:middle; font-family: 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif;">
                                 <?php if ($template === 'review') : ?>
-                                    <a href="<?= esc_attr($link); ?>">Leave Review</a>
+                                    <a href="<?= esc_attr($link); ?>"><?= $text; ?></a>
                                 <?php else :
                                     echo $item->get_quantity();
 

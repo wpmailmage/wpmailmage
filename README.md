@@ -3,8 +3,8 @@
 **Contributors:** mailmage \
 **Tags:** cart abandonment, cart recovery, product reviews, customer reviews, review reminder, woocommerce, email \
 **Requires at least:** 4.0 \
-**Tested up to:** 5.6 \
-**Stable tag:** 0.0.22 \
+**Tested up to:** 5.7 \
+**Stable tag:** 0.0.23 \
 **Requires PHP:** 5.6 \
 **License:** GPLv2 or later \
 **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
@@ -79,6 +79,10 @@ For further documentation on installing and using Mail Mage can be found [here](
 
 
 ## Changelog
+
+### 0.0.23
+
+* Added text argument to wc_order.items variable to set review link text.
 
 ### 0.0.21
 
