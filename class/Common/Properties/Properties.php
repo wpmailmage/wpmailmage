@@ -35,7 +35,7 @@ class Properties
         $this->generate_file_paths();
 
         $this->plugin_domain = 'mail-mage';
-        $this->plugin_version = EWP_VERSION;
+        $this->plugin_version = MAIL_MAGE_VERSION;
         $this->is_pro = false;
 
         $this->rest_namespace = 'ewp';

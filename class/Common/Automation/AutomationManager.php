@@ -46,7 +46,7 @@ class AutomationManager
     {
         $result = array();
         $query  = new \WP_Query(array(
-            'post_type'      => EWP_POST_TYPE,
+            'post_type'      => MAIL_MAGE_POST_TYPE,
             'posts_per_page' => -1,
             'orderby' => 'ID',
             'order' => 'ASC'
@@ -69,7 +69,7 @@ class AutomationManager
             return $id;
         }
 
-        if (EWP_POST_TYPE !== get_post_type($id)) {
+        if (MAIL_MAGE_POST_TYPE !== get_post_type($id)) {
             return false;
         }
 

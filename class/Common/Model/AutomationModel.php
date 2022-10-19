@@ -80,7 +80,7 @@ class AutomationModel
                 $post = get_post($this->id);
             }
 
-            if ($post && $post->post_type === EWP_POST_TYPE) {
+            if ($post && $post->post_type === MAIL_MAGE_POST_TYPE) {
 
                 $json = maybe_unserialize($post->post_content, true);
                 $this->id = $post->ID;
@@ -107,7 +107,7 @@ class AutomationModel
         ];
 
         if (is_null($this->id)) {
-            $postarr['post_type'] = EWP_POST_TYPE;
+            $postarr['post_type'] = MAIL_MAGE_POST_TYPE;
             $postarr['post_status'] = 'publish';
 
             $result = wp_insert_post($postarr, true);
@@ -153,7 +153,7 @@ class AutomationModel
 
     public function delete()
     {
-        if (get_post_type($this->get_id()) === EWP_POST_TYPE) {
+        if (get_post_type($this->get_id()) === MAIL_MAGE_POST_TYPE) {
             return wp_delete_post($this->get_id(), true);
         }
         return false;

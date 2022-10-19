@@ -171,7 +171,7 @@ class Migrations
     public function migration_05($migrate_data = true)
     {
         $query = new \WP_Query([
-            'post_type' => EWP_POST_TYPE,
+            'post_type' => MAIL_MAGE_POST_TYPE,
             'posts_per_page' => -1
         ]);
         if ($query->have_posts()) {

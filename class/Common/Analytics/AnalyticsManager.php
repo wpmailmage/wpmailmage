@@ -153,7 +153,7 @@ class AnalyticsManager
         }
     }
 
-    public function get_chart_data($id, $end_time, $length, $grouped = 'day', $date_unit = 'D', $keys = [])
+    public function get_chart_data($id, $end_time, $length, $grouped = null, $date_unit = 'D', $keys = [])
     {
         if (empty($keys)) {
             return false;
@@ -169,6 +169,26 @@ class AnalyticsManager
          */
         global $wpdb;
 
+        //
+        $id_query = '';
+        if (intval($id) > 0) {
+            $id_query = " INNER JOIN {$properties->table_automation_queue} as `q` ON  q.id = qa.queue_id AND q.automation_id='" . intval($id) . "' ";
+        }
+
+        if (is_null($grouped)) {
+            $max_days_query = "SELECT datediff(CURDATE(), DATE_FORMAT(qa.created, '%Y-%m-%d')) as `days`
+        FROM `" . $properties->table_automation_queue_activity . "` as `qa`" . $id_query .
+                "WHERE qa.created <= '" . date('Y-m-d 23:59:59', $end_time) . "' ORDER BY qa.created ASC LIMIT 1";
+            $max_days = absint($wpdb->get_var($max_days_query));
+
+            $grouped = 'day';
+            if ($max_days > 90) {
+                $grouped = 'month';
+            } elseif ($max_days > 30) {
+                $grouped = 'week';
+            }
+        }
+
         switch ($grouped) {
             case 'day':
                 $date_format = '%Y-%m-%d';
@@ -178,9 +198,9 @@ class AnalyticsManager
                 break;
             case 'week':
                 // Week starts on monday
-                $date_format = '%u';
+                $date_format = '%Y-%u';
                 $offset_unit = WEEK_IN_SECONDS;
-                $mysql_date_format = 'W';
+                $mysql_date_format = 'Y-W';
                 $time_unit = 'week';
                 break;
             case 'month':
@@ -197,12 +217,6 @@ class AnalyticsManager
             $start_time = strtotime($length . ' ' . $time_unit . 's', $end_time);
         } else {
             $start_time = false;
-        }
-
-
-        $id_query = '';
-        if (intval($id) > 0) {
-            $id_query = " INNER JOIN {$properties->table_automation_queue} as `q` ON  q.id = qa.queue_id AND q.automation_id='" . intval($id) . "' ";
         }
 
         $key_checker = [];
@@ -232,8 +246,21 @@ class AnalyticsManager
         }
 
         if ($length == 0) {
-            $oldest_time = array_reduce($rows, function ($carry, $item) {
-                $created = strtotime($item['date']);
+            $oldest_time = array_reduce($rows, function ($carry, $item) use ($grouped) {
+
+                switch ($grouped) {
+                    case 'week':
+                        list($year, $week) = explode('-', $item['date']);
+                        $date = new DateTime('midnight');
+                        $date->setISODate($year, $week);
+                        $created = $date->getTimestamp();
+                        break;
+                    default:
+                        $created = strtotime($item['date']);
+                        break;
+                }
+
+
                 return $created < $carry ? $created : $carry;
             }, $end_time);
 
@@ -245,10 +272,10 @@ class AnalyticsManager
 
             switch ($grouped) {
                 case 'day':
-                    $length = $d1->diff($d2)->d;
+                    $length = $d1->diff($d2)->days;
                     break;
                 case 'week':
-                    $length = ceil($d1->diff($d2)->d / 7);
+                    $length = ceil($d1->diff($d2)->days / 7);
                     break;
                 case 'month':
                     $length = $d1->diff($d2)->m;
@@ -362,7 +389,7 @@ class AnalyticsManager
         if ($action == 'send_email' || $action == 'email') {
             switch ($event) {
                 case 'woocommerce.abandoned_cart':
-                    list($chart_data, $ticks) = $this->get_chart_data($id, time(), 0, 'day', 'jS M', [$trigger_event, 'recovered::wc_cart']);
+                    list($chart_data, $ticks) = $this->get_chart_data($id, time(), 0, null, 'jS M', [$trigger_event, 'recovered::wc_cart']);
                     $data[] = [
                         'id' => 'abandoned-cart',
                         'title' => 'Abandoned Carts',
@@ -373,7 +400,7 @@ class AnalyticsManager
                     break;
                 case 'woocommerce.order_status':
                     // TODO: Check if the action contains review items 
-                    list($chart_data, $ticks, $totals) = $this->get_chart_data($id, time(), 0, 'day', 'jS M', [$trigger_event, 'read', 'click', 'wc_review']);
+                    list($chart_data, $ticks, $totals) = $this->get_chart_data($id, time(), 0, null, 'jS M', [$trigger_event, 'read', 'click', 'wc_review']);
 
                     $legends = ['Emails sent - ' . $totals[0], 'Emails read - ' . $totals[1]];
                     $title = 'Reports';
@@ -394,7 +421,7 @@ class AnalyticsManager
                     ];
 
                     // if the action contains coupon generation
-                    list($chart_data, $ticks, $totals) = $this->get_chart_data($id, time(), 0, 'day', 'jS M', [$trigger_event, 'read', 'generate::wc_coupon', 'used::wc_coupon']);
+                    list($chart_data, $ticks, $totals) = $this->get_chart_data($id, time(), 0, null, 'jS M', [$trigger_event, 'read', 'generate::wc_coupon', 'used::wc_coupon']);
                     if ($totals[2] > 0) {
                         $data[] = [
                             'id' => 'coupons',
@@ -406,7 +433,7 @@ class AnalyticsManager
                     }
                     break;
                 default:
-                    list($chart_data, $ticks, $totals) = $this->get_chart_data($id, time(), 0, 'day', 'jS M', [$trigger_event, 'read']);
+                    list($chart_data, $ticks, $totals) = $this->get_chart_data($id, time(), 0, null, 'jS M', [$trigger_event, 'read']);
                     $data[] = [
                         'id' => 'General',
                         'title' => 'All time',
@@ -417,7 +444,7 @@ class AnalyticsManager
                     break;
             }
         } elseif ($action == 'log') {
-            list($chart_data, $ticks, $totals) = $this->get_chart_data($id, time(), 0, 'day', 'jS M', ['log']);
+            list($chart_data, $ticks, $totals) = $this->get_chart_data($id, time(), 0, null, 'jS M', ['log']);
             $data[] = [
                 'id' => 'Events Logged',
                 'title' => 'All time',
